@@ -2,7 +2,7 @@
 
 julia_version = "1.10.3"
 manifest_format = "2.0"
-project_hash = "df261860bea3b8b847991d072f943afa5824a9ca"
+project_hash = "00849bd33feb153ffdc208d2039a5f5d2ec0e530"
 
 [[deps.AMD]]
 deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse_jll"]
@@ -670,6 +670,12 @@ deps = ["Accessors", "FLoops", "FastClosures", "FoldsThreads", "KrylovKit", "Lin
 git-tree-sha1 = "3a0cad90f83b17b78a47dca9285a9d086f3922ed"
 uuid = "bb1c41ca-d63c-52ed-829e-0820dda26502"
 version = "0.10.2"
+
+[[deps.MPSKitModels]]
+deps = ["LinearAlgebra", "MPSKit", "MacroTools", "PrecompileTools", "TensorKit", "TensorOperations", "TupleTools"]
+git-tree-sha1 = "902cc06f69d3b64833cd87b3cc90d44651ff37ab"
+uuid = "ca635005-6f8c-4cd1-b51d-8491250ef2ab"
+version = "0.3.0"
 
 [[deps.MacroTools]]
 deps = ["Markdown", "Random"]
