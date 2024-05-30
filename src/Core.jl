@@ -2,10 +2,16 @@ using TensorKit,  MPSKit, MPSKitModels
 using Yao
 using Convex, MosekTools, SCS
 
-function main(D, n, A)
+function mps_state(H,d, D)
+    random_data = TensorMap(rand, ComplexF64, ℂ^D * ℂ^d, ℂ^D)
+    state = InfiniteMPS([random_data])
+    groundstate, cache, delta = find_groundstate(state, H, GradientGrassmann(; maxiter=50))
+    return groundstate
+end
+
+function main(h, D, n, A)
     d = 2 # spin physical dimension
     # 1d translational invariant hamiltonian local term
-    h = mat((kron(X, X) + kron(Y, Y) + kron(Z, Z)) / 4)
 
     ρ3 = ComplexVariable(d^3, d^3)
 
@@ -41,14 +47,20 @@ function main(D, n, A)
     return problem
 end
 
+
 d = 2
-D = 3 
+D = 4 
+
+δ = 0.5
+H = heisenberg_XXZ(; Delta=δ , spin=1 // 2)
+h = mat((kron(X, X) + kron(Y, Y) + δ*kron(Z, Z)) / 4)
+ψ = mps_state(H, d, D)
 
 A = rand_unitary(d*D)
 A = A[1:D,:]
 A = reshape(A,D,d,D)
 
-n = 100 
-res = main(D, n,A)
+n =  5 
+res = main(h,D,n,A)
 
 @show res.optval
