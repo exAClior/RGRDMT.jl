@@ -1,47 +1,41 @@
-using TensorKit,  MPSKit, MPSKitModels
-using Yao
-using Convex, MosekTools, SCS
-using Plots
-
-function mps_state(H,d, D)
+function mps_state(H::MPOHamiltonian{T}, d::Integer, D::Integer) where {T}
     random_data = TensorMap(rand, ComplexF64, ℂ^D * ℂ^d, ℂ^D)
     state = InfiniteMPS([random_data])
-    groundstate, cache, delta = find_groundstate(state, H, GradientGrassmann(; maxiter=50))
-    return groundstate
+    return find_groundstate(state, H, GradientGrassmann(; maxiter=50))
 end
 
 
-function one_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer, optimizer=SCS.Optimizer) where V
+function one_step_approx(h::AbstractMatrix{V}, n::Integer, optimizer=SCS.Optimizer) where {V}
     d = 2 # spin physical dimension
-    ρs = [ComplexVariable(d^n, d^n) for _ in 2:n]
+    ρs = [ComplexVariable(d^ii, d^ii) for ii in 2:n]
 
     constraints = [
         tr(ρs[1]) == 1.0,
         [ρ ⪰ 0 for ρ in ρs]...,
-        [ρs[ii-1] == partialtrace(ρs[ii], 1, d * ones(Int64,ii)) for ii in 3:n]...,
-        [ρs[ii-1] == partialtrace(ρs[ii], ii, d * ones(Int64,ii)) for ii in 3:n]...,
+        [ρs[ii-2] == partialtrace(ρs[ii-1], 1, d * ones(Int64, ii)) for ii in 3:n]...,
+        [ρs[ii-2] == partialtrace(ρs[ii-1], ii, d * ones(Int64, ii)) for ii in 3:n]...,
     ]
 
     problem = minimize(real(tr(h * ρs[1])), constraints)
 
-    solve!(problem, Mosek.Optimizer)
+    solve!(problem, optimizer)
     return problem
 end
 
-function two_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer, A::)
+function two_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer, A::AbstractArray{V,3}, optimizer=SCS.Optimizer) where {V}
     d = 2 # spin physical dimension
     # 1d translational invariant hamiltonian local term
 
     ρ3 = ComplexVariable(d^3, d^3)
 
-    @tensor W2[j, l, i, k] := A[j,i,a] * A[a,k,l]
+    @tensor W2[j, l, i, k] := A[j, i, a] * A[a, k, l]
 
     W2 = reshape(W2, D^2, d^2)
 
-    R2 = reshape(A, D,D*d) 
-    L2 = transpose(reshape(A,D*d,D))
+    R2 = reshape(A, D, D * d)
+    L2 = transpose(reshape(A, D * d, D))
 
-    iremain = Diagonal(ones(ComplexF64,d* D))
+    iremain = Diagonal(ones(ComplexF64, d * D))
     i2mat = mat(I2)
 
     ωs = [ComplexVariable(d^2 * D^2, d^2 * D^2) for _ in 1:n-3]
@@ -62,25 +56,7 @@ function two_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer, A::)
 
     problem = minimize(real(tr(kron(h, mat(I2)) * ρ3)), constraints)
 
-    solve!(problem, Mosek.Optimizer)
+    solve!(problem, optimizer)
     return problem
 end
 
-
-d = 2
-D = 3 
-
-δ = 1.0
-H = heisenberg_XXZ(; Delta=δ , spin=1 // 2);
-h = mat((kron(X, X) + kron(Y, Y) + δ*kron(Z, Z)) / 4);
-ψ = mps_state(H, d, D)
-
-A = rand_unitary(d*D);
-A = A[1:D,:];
-A = reshape(A,D,d,D);
-typeof(A)
-
-n =  20
-res = main(h,D,n,A)
-
-@show res.optval

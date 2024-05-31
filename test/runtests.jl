@@ -2,5 +2,5 @@ using RGRDMT
 using Test
 
 @testset "RGRDMT.jl" begin
-    # Write your tests here.
+    include("Core.jl")
 end
