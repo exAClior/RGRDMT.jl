@@ -1,6 +1,7 @@
 using TensorKit,  MPSKit, MPSKitModels
 using Yao
 using Convex, MosekTools, SCS
+using Plots
 
 function mps_state(H,d, D)
     random_data = TensorMap(rand, ComplexF64, ℂ^D * ℂ^d, ℂ^D)
@@ -9,7 +10,25 @@ function mps_state(H,d, D)
     return groundstate
 end
 
-function main(h, D, n, A)
+
+function one_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer, optimizer=SCS.Optimizer) where V
+    d = 2 # spin physical dimension
+    ρs = [ComplexVariable(d^n, d^n) for _ in 2:n]
+
+    constraints = [
+        tr(ρs[1]) == 1.0,
+        [ρ ⪰ 0 for ρ in ρs]...,
+        [ρs[ii-1] == partialtrace(ρs[ii], 1, d * ones(Int64,ii)) for ii in 3:n]...,
+        [ρs[ii-1] == partialtrace(ρs[ii], ii, d * ones(Int64,ii)) for ii in 3:n]...,
+    ]
+
+    problem = minimize(real(tr(h * ρs[1])), constraints)
+
+    solve!(problem, Mosek.Optimizer)
+    return problem
+end
+
+function two_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer, A::)
     d = 2 # spin physical dimension
     # 1d translational invariant hamiltonian local term
 
@@ -49,18 +68,19 @@ end
 
 
 d = 2
-D = 4 
+D = 3 
 
-δ = 0.5
-H = heisenberg_XXZ(; Delta=δ , spin=1 // 2)
-h = mat((kron(X, X) + kron(Y, Y) + δ*kron(Z, Z)) / 4)
+δ = 1.0
+H = heisenberg_XXZ(; Delta=δ , spin=1 // 2);
+h = mat((kron(X, X) + kron(Y, Y) + δ*kron(Z, Z)) / 4);
 ψ = mps_state(H, d, D)
 
-A = rand_unitary(d*D)
-A = A[1:D,:]
-A = reshape(A,D,d,D)
+A = rand_unitary(d*D);
+A = A[1:D,:];
+A = reshape(A,D,d,D);
+typeof(A)
 
-n =  5 
+n =  20
 res = main(h,D,n,A)
 
 @show res.optval
