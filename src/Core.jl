@@ -42,7 +42,7 @@ function two_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer, A::Abstra
     d = 2 # spin physical dimension
     # 1d translational invariant hamiltonian local term
 
-    ρ3 = ComplexVariable(d^3, d^3)
+    ρ3 = HermitianSemidefinite(d^3, d^3)
 
     @tensor W2[j, l, i, k] := A[j, i, a] * A[a, k, l]
 
@@ -54,12 +54,10 @@ function two_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer, A::Abstra
     iremain = Diagonal(ones(ComplexF64, d * D))
     i2mat = mat(I2)
 
-    ωs = [ComplexVariable(d^2 * D^2, d^2 * D^2) for _ in 1:n-3]
+    ωs = [HermitianSemidefinite(d^2 * D^2, d^2 * D^2) for _ in 1:n-3]
 
     constraints = Constraint[
         tr(ρ3) == 1.0,
-        ρ3 ⪰ 0,
-        [ω ⪰ 0 for ω in ωs]...,
         partialtrace(ρ3, 1, d * ones(Int64, 3)) == partialtrace(ρ3, 3, d * ones(Int64, 3)),
         kron(W2, i2mat) * ρ3 * kron(W2, i2mat)' == partialtrace(ωs[1], 1, [d, D^2, d]),
         kron(i2mat, W2) * ρ3 * kron(i2mat, W2)' == partialtrace(ωs[1], 3, [d, D^2, d])
@@ -72,7 +70,7 @@ function two_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer, A::Abstra
 
     problem = minimize(real(tr(kron(h, mat(I2)) * ρ3)), constraints)
 
-    solve!(problem, optimizer)
+    solve!(problem, optimizer;silent=true)
     return problem
 end
 
