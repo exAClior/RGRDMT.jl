@@ -5,9 +5,8 @@ function mps_state(H::MPOHamiltonian{T}, d::Integer, D::Integer) where {T}
 end
 
 
-function one_step_approx(h::AbstractMatrix{V}, n::Integer, optimizer=SCS.Optimizer) where {V}
-    d = 2 # spin physical dimension
-    ρs = [ComplexVariable(d^ii, d^ii) for ii in 2:n]
+function one_step_approx_nativedual(h::AbstractMatrix{V}, n::Integer, optimizer=SCS.Optimizer) where {V}
+    d = Int(sqrt(size(h,1)))   # spin physical dimension
 
     constraints = Constraint[
         tr(ρs[1]) == 1.0,
@@ -18,7 +17,24 @@ function one_step_approx(h::AbstractMatrix{V}, n::Integer, optimizer=SCS.Optimiz
 
     problem = minimize(real(tr(h * ρs[1])), constraints)
 
-    solve!(problem, optimizer)
+    solve!(problem, optimizer;silent=true)
+    return problem
+end
+
+
+function one_step_approx(h::AbstractMatrix{V}, n::Integer, optimizer=SCS.Optimizer) where {V}
+    d = 2 # spin physical dimension
+    ρs = [HermitianSemidefinite(d^ii, d^ii) for ii in 2:n]
+
+    constraints = Constraint[
+        tr(ρs[1]) == 1.0,
+        [ρs[ii-2] == partialtrace(ρs[ii-1], 1, d * ones(Int64, ii)) for ii in 3:n]...,
+        [ρs[ii-2] == partialtrace(ρs[ii-1], ii, d * ones(Int64, ii)) for ii in 3:n]...,
+    ]
+
+    problem = minimize(real(tr(h * ρs[1])), constraints)
+
+    solve!(problem, optimizer;silent=true)
     return problem
 end
 

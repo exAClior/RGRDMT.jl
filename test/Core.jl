@@ -1,6 +1,6 @@
 using Test, RGRDMT, Plots, Yao
 using MPSKit, MPSKitModels
-using SCS, MosekTools
+using SCS, MosekTools, Dualization
 using Random
 
 Random.seed!(1234)
@@ -12,14 +12,14 @@ g = 1 / 2.0 # critical TFI
 # E_exact = -g * (1.0 + J^2/4/g^2)
 H = transverse_field_ising(; J=J, g=g)
 h = mat((kron(Z, Z)) + g/2.0 * kron(X,I2) + g/2.0 * kron(I2,X));
-ψ, _ , _= mps_state(H,d,4)
-E_exact = expectation_value(ψ,H)
+ψ, _ , _= mps_state(H,d,6);
+E_exact = real(expectation_value(ψ,H))
 
 vals = Float64[]
-n_exact= 10:12
 
+n_exact= 3:13
 for n in n_exact 
-    problem = one_step_approx(h,n,Mosek.Optimizer)
+    problem = one_step_approx(h,n,dual_optimizer(SCS.Optimizer))
     push!(vals,problem.optval)
 end
 
