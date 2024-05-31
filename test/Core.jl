@@ -8,12 +8,13 @@ using DelimitedFiles
 function main(h::AbstractMatrix{V}, n_rng::UnitRange{Int}, E_exact::Float64, efilename::String, nfilename::String) where {V}
     vals = Float64[]
     for n in n_rng
+        println("Working on n = $n")
         problem = one_step_approx(h, n, dual_optimizer(SCS.Optimizer))
         push!(vals, problem.optval)
+        ΔELTI = real.(E_exact .- vals)
+        writedlm(efilename, ΔELTI, ',')
+        writedlm(nfilename, n_rng, ',')
     end
-    ΔELTI = real.(E_exact .- vals)
-    writedlm(efilename, ΔELTI, ',')
-    writedlm(nfilename, n_rng, ',')
 end
 
 
@@ -48,13 +49,13 @@ A = ψ.AR[]
 A = Array(reshape(A[],D,d,D)) 
 
 
-Random.seed!(1234)
+# Random.seed!(1234)
 # A = rand_unitary(d * D)
 # A = A[1:D, :]
 # A * A'
 # A = reshape(A, D, d, D)
 
-main2(D, E_exact[1], 5:30,A)
+main2(D, E_exact[1], 5:10,A)
 
 function my_plot(eng_filenames::Vector{String}, n_filenames::Vector{String})
     plt = Plots.plot(
@@ -63,10 +64,9 @@ function my_plot(eng_filenames::Vector{String}, n_filenames::Vector{String})
         ylims=(1e-6, 1e-1),
         yticks=[1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
         yscale=:log10,
-        xlims=(2, 50),
-        # xticks = [2, 4,6,8,10,20,60,100,180],
+        xlims=(2, 64),
+        # xticks = [2,4,6,8,10,20,60,100,180],
         xscale=:log2,
-        # xtickfont = font(20, "Courier")
     )
     for (efname, nfname) in zip(eng_filenames, n_filenames)
         ΔE = readdlm(efname, ',')
