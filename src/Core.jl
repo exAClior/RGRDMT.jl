@@ -9,7 +9,7 @@ function one_step_approx(h::AbstractMatrix{V}, n::Integer, optimizer=SCS.Optimiz
     d = 2 # spin physical dimension
     ρs = [ComplexVariable(d^ii, d^ii) for ii in 2:n]
 
-    constraints = [
+    constraints = Constraint[
         tr(ρs[1]) == 1.0,
         [ρ ⪰ 0 for ρ in ρs]...,
         [ρs[ii-2] == partialtrace(ρs[ii-1], 1, d * ones(Int64, ii)) for ii in 3:n]...,
@@ -40,7 +40,7 @@ function two_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer, A::Abstra
 
     ωs = [ComplexVariable(d^2 * D^2, d^2 * D^2) for _ in 1:n-3]
 
-    constraints = [
+    constraints = Constraint[
         tr(ρ3) == 1.0,
         ρ3 ⪰ 0,
         [ω ⪰ 0 for ω in ωs]...,
