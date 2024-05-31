@@ -16,7 +16,7 @@ h = mat((kron(Z, Z)) + g/2.0 * kron(X,I2) + g/2.0 * kron(I2,X));
 E_exact = expectation_value(ψ,H)
 
 vals = Float64[]
-n_exact= 3:12
+n_exact= 10:12
 
 for n in n_exact 
     problem = one_step_approx(h,n,Mosek.Optimizer)
