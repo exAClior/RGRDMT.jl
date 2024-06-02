@@ -40,10 +40,29 @@ function CGmapping_from_AL(AL::TensorMap{T}, k0::Integer) where {T}
     return Matrix(V0k0), L, R
 end
 
-function mps_state(H::MPOHamiltonian{T}, d::Integer, D::Integer) where {T}
-    A = TensorMap(rand, ComplexF64, ℂ^D * ℂ^d, ℂ^D)
-    state = InfiniteMPS([A])
-    return find_groundstate(
-        state, H,GradientGrassmann(; tol=1e-12,maxiter=400)
-    )
+function good_ground_state(H::MPOHamiltonian{T},D::Integer) where {T}
+    # A = TensorMap(rand, ComplexF64, ℂ^D* ℂ^2, ℂ^D)
+    # state = InfiniteMPS([A])
+
+    # groundstate, _, _= find_groundstate(
+    #     state, H, GradientGrassmann(;tol=1e-12) 
+    # )
+    # return groundstate
+    A = TensorMap(rand, ComplexF64, ℂ^D* ℂ^2, ℂ^D);
+    B = TensorMap(rand, ComplexF64, ℂ^D* ℂ^2, ℂ^D);
+    state = InfiniteMPS([A,B]);
+    # does not converge well, try VUMPS
+    groundstate, _, _= find_groundstate(
+        state, repeat(H,2), VUMPS(; maxiter=100, tol_galerkin=1e-12)
+    );
+    return groundstate
+end
+
+
+function approx_ground_state(H::MPOHamiltonian{T},ψ_exact::MPSKit.AbstractMPS,d::Integer, D::Integer) where {T}
+    data = TensorMap(rand,ComplexF64,ℂ^D*ℂ^d,ℂ^D)
+    ψ_0 =  InfiniteMPS(data);
+    operator = time_evolve(H,0.1)
+    ψ_approx,_ = approximate(ψ_0,(operator,ψ_exact),VUMPS(;tol_galkerin=1e-10))
+    return ψ_approx
 end
