@@ -2,7 +2,7 @@ function CGmapping_from_AL(AL::TensorMap{T}, k0::Integer) where {T}
     D = dim(domain(AL))
     d = dims(codomain(AL))[2]
 
-    D^2 < d^k0 || throw(ArgumentError("D^2 must be greater than d^k0"))
+    D^2 < d^k0 || throw(ArgumentError("D^2 must be less than d^k0"))
 
     iDmat = diagm(ones(eltype(AL[]), D))
 
@@ -38,4 +38,12 @@ function CGmapping_from_AL(AL::TensorMap{T}, k0::Integer) where {T}
     R = P \ PmpsR
 
     return Matrix(V0k0), L, R
+end
+
+function mps_state(H::MPOHamiltonian{T}, d::Integer, D::Integer) where {T}
+    A = TensorMap(rand, ComplexF64, ℂ^D * ℂ^d, ℂ^D)
+    state = InfiniteMPS([A])
+    return find_groundstate(
+        state, H,GradientGrassmann(; tol=1e-12,maxiter=400)
+    )
 end

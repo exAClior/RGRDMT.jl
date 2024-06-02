@@ -1,10 +1,3 @@
-function mps_state(H::MPOHamiltonian{T}, d::Integer, D::Integer) where {T}
-    # state = InfiniteMPS([ℂ^d,ℂ^d],[ℂ^D,ℂ^D]);
-    # operator = repeat(H,2);
-    # return find_groundstate(state,operator,IDMRG2(trscheme=truncbelow(1e-5)))
-    state = InfiniteMPS([ℂ^d],[ℂ^D]);
-    return find_groundstate(state,H,IDMRG1())
-end
 
 function one_step_approx(h::AbstractMatrix{V}, n::Integer, optimizer=SCS.Optimizer) where {V}
     d = 2 # spin physical dimension
