@@ -39,25 +39,45 @@ function main2(h::AbstractMatrix{T}, k0::Integer, D::Integer, E_exact::Float64, 
 end
 
 
-d = 2
-D = 5
-H = heisenberg_XXX(; spin=1 // 2);
-h = mat((kron(X, X) + kron(Y, Y) + kron(Z, Z)) / 4);
+function actual()
 
-ψ = good_ground_state(H,100) 
+    h = mat((kron(X, X) + kron(Y, Y) + kron(Z, Z)) / 4)
+    H = heisenberg_XXX(; spin=1 // 2)
+    E_exact = 0.25 - log(2)
+    main(h, 3:12, E_exact, "elti.csv", "n_exact.csv")
 
-ψ_approx = approx_ground_state(H, ψ, d, D) 
-E_exact = real(expectation_value(ψ_approx, H))
-E_exact = 0.25 - log(2)
 
-main(h, 3:8, E_exact, "elti.csv", "n_exact.csv")
+    # ψ = good_ground_state(H,100) 
+    ψ = good_ground_state(H, 30)
 
-k0 = 5 
-A = ψ_approx.AL[]
-V0, L, R = CGmapping_from_AL(A, k0)
+    d = 2
+    D = 2
+    ψ_approx = approx_ground_state(H, ψ, d, D)
+    # E_exact = real(expectation_value(ψ_approx, H))
+    k0 = 3
+    A = ψ_approx.AL[]
+    V0, L, R = CGmapping_from_AL(A, k0)
+    main2(h, k0, D, E_exact, 8:20, V0, L, R)
 
-main2(h, k0, D, E_exact, 8:20, V0, L, R)
+    D = 5
+    ψ_approx = approx_ground_state(H, ψ, d, D)
+    # E_exact = real(expectation_value(ψ_approx, H))
+    k0 = 5
+    A = ψ_approx.AL[]
+    V0, L, R = CGmapping_from_AL(A, k0)
+    main2(h, k0, D, E_exact, 8:30, V0, L, R)
 
+    D = 4
+    A = rand_unitary(d * D)
+    A = A[1:D, :]
+    A = reshape(A, D, d, D)
+    A = TensorMap(A, ℂ^D * ℂ^d, ℂ^D)
+    k0 = 5
+    V0, L, R = CGmapping_from_AL(A, k0)
+    main2(h, k0, D, E_exact, 8:30, V0, L, R)
+end
+
+actual()
 
 function my_plot(eng_filenames::Vector{String}, n_filenames::Vector{String})
     plt = Plots.plot(
@@ -77,8 +97,8 @@ function my_plot(eng_filenames::Vector{String}, n_filenames::Vector{String})
     return plt
 end
 
-eng_filenames = ["elti.csv", "erlxd2.csv", "erlxd5.csv"]
-n_filenames = ["n_exact.csv", "nd2.csv", "nd5.csv"]
+# eng_filenames = ["elti.csv", "erlxd2.csv", "erlxd5.csv"]
+# n_filenames = ["n_exact.csv", "nd2.csv", "nd5.csv"]
 
-cur_plt = my_plot(eng_filenames, n_filenames)
+# cur_plt = my_plot(eng_filenames, n_filenames)
 
