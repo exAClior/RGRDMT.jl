@@ -22,19 +22,8 @@ end
 # J = 1.0
 # g = 1 / 2.0 # critical TFI
 # H = transverse_field_ising(; J=J, g=g)
-
 # h = mat(-kron(Z, Z)/4.0 - g * (kron(X, I2)/2.0+ kron(I2, X)/2.0))
 
-δ = 1.0
-# H = heisenberg_XXZ(; Delta=δ , spin=1 // 2);
-H = heisenberg_XXX(; spin=1 // 2);
-h = mat((kron(X, X) + kron(Y, Y) + δ*kron(Z, Z)) / 4);
-
-ψ, _, _ = mps_state(H, 2, 10);
-E_exact = real(expectation_value(ψ, H))
-E_exact = 0.25 - log(2)
-
-main(h, 3:8, E_exact[1], "elti.csv", "n_exact.csv")
 
 function main2(h::AbstractMatrix{T}, k0::Integer, D::Integer, E_exact::Float64, n_rng::UnitRange{Int}, W2::AbstractMatrix{T}, L2::AbstractMatrix{T}, R2::AbstractMatrix{T}) where {T}
     vals = Float64[]
@@ -50,16 +39,24 @@ function main2(h::AbstractMatrix{T}, k0::Integer, D::Integer, E_exact::Float64, 
 end
 
 
-D = 3
 d = 2
-ψ, _, _ = mps_state(H, d, D)
+D = 5
+H = heisenberg_XXX(; spin=1 // 2);
+h = mat((kron(X, X) + kron(Y, Y) + kron(Z, Z)) / 4);
 
-k0 = 4
-A = ψ.AL[]
+ψ = good_ground_state(H,100) 
+
+ψ_approx = approx_ground_state(H, ψ, d, D) 
+E_exact = real(expectation_value(ψ_approx, H))
+E_exact = 0.25 - log(2)
+
+main(h, 3:8, E_exact, "elti.csv", "n_exact.csv")
+
+k0 = 5 
+A = ψ_approx.AL[]
 V0, L, R = CGmapping_from_AL(A, k0)
 
-
-main2(h, k0, D, E_exact[1], 8:20, V0, L, R)
+main2(h, k0, D, E_exact, 8:20, V0, L, R)
 
 
 function my_plot(eng_filenames::Vector{String}, n_filenames::Vector{String})
@@ -80,10 +77,8 @@ function my_plot(eng_filenames::Vector{String}, n_filenames::Vector{String})
     return plt
 end
 
-
-eng_filenames = ["elti.csv", "erlxd2.csv", "erlxd3.csv"]
-n_filenames = ["n_exact.csv", "nd2.csv", "nd3.csv"]
+eng_filenames = ["elti.csv", "erlxd2.csv", "erlxd5.csv"]
+n_filenames = ["n_exact.csv", "nd2.csv", "nd5.csv"]
 
 cur_plt = my_plot(eng_filenames, n_filenames)
 
-# ψ = mps_state(H, d, D)
