@@ -20,16 +20,14 @@ function two_step_approx(h::AbstractMatrix{V}, k0::Integer, D::Integer, n::Integ
 
     D^2 < d^(k0) || throw(ArgumentError("D^2 must be greater than d^k0"))
 
-    ρ3 = ComplexVariable(d^(k0 + 1), d^(k0 + 1))
+    ρ3 = HermitianSemidefinite(d^(k0 + 1), d^(k0 + 1))
 
     idmat = diagm(ones(eltype(h), d))
 
-    ωs = [ComplexVariable(d^2 * D^2, d^2 * D^2) for _ in (k0+2):n]
+    ωs = [HermitianSemidefinite(d^2 * D^2, d^2 * D^2) for _ in (k0+2):n]
 
     constraints = Constraint[
         tr(ρ3)==1.0,
-        ρ3 ⪰ 0,
-        [ω ⪰ 0 for ω in ωs]...,
         partialtrace(ρ3, 1, d * ones(Int64, k0 + 1))==partialtrace(ρ3, k0 + 1, d * ones(Int64, k0 + 1)),
         kron(W2, idmat)*ρ3*kron(W2, idmat)'==partialtrace(ωs[1], 1, [d, D^2, d]),
         kron(idmat, W2)*ρ3*kron(idmat, W2)'==partialtrace(ωs[1], 3, [d, D^2, d])

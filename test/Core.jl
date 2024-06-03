@@ -22,6 +22,7 @@ end
 # J = 1.0
 # g = 1 / 2.0 # critical TFI
 # H = transverse_field_ising(; J=J, g=g)
+# E_exact = 2/π
 # h = mat(-kron(Z, Z)/4.0 - g * (kron(X, I2)/2.0+ kron(I2, X)/2.0))
 
 
@@ -84,6 +85,7 @@ function my_plot(eng_filenames::Vector{String}, n_filenames::Vector{String})
         xlabel="log2(n)",
         ylabel="log10(ΔE)",
         ylims=(1e-6, 1e-1),
+        # ylims=(1e-3, 1e-1),
         yticks=[1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
         yscale=:log10,
         xlims=(2, 64),
@@ -97,8 +99,32 @@ function my_plot(eng_filenames::Vector{String}, n_filenames::Vector{String})
     return plt
 end
 
+eng_filenames = ["elti.csv"]
+n_filenames = ["n_exact.csv"]
 # eng_filenames = ["elti.csv", "erlxd2.csv", "erlxd5.csv"]
 # n_filenames = ["n_exact.csv", "nd2.csv", "nd5.csv"]
 
-# cur_plt = my_plot(eng_filenames, n_filenames)
+cur_plt = my_plot(eng_filenames, n_filenames)
 
+
+D = 120
+A = TensorMap(rand, ComplexF64, ℂ^D * ℂ^2, ℂ^D)
+state = InfiniteMPS([A])
+
+XXXH = heisenberg_XXX(; spin=1 // 2)
+
+optimize_steps = Float64[]
+function finalize(iter, ψ, H, envs)
+    push!(optimize_steps, real(expectation_value(ψ,H)[1]))
+    return ψ, envs 
+end
+groundstate, cache,delta = find_groundstate(
+    state, XXXH, VUMPS(;tol_galerkin=1e-5, verbose=false,finalize=finalize) 
+)
+
+E_exact = 1/4 - log(2)
+
+δEs = optimize_steps .- E_exact
+
+using Plots
+Plots.plot(1:length(δEs), δEs, yscale=:log10, ylabel="log10(ΔE)", xlabel="iteration", label="VUMPS")

@@ -105,7 +105,13 @@
             <h2>Problem Setup</h2>
 <ul>
 <li>Local Hamiltonian: $H = \sum_{loc}h_{loc}$</li>
-<li>Eg: $H = \sum_{&lt;i,j&gt;} (X_iX_j + Y_iY_j + Z_iZ_j)/4$</li>
+<li>E.g:
+<ol>
+<li>$&lt;i,j&gt;$ are nearest neighbor indices on Infinite 1D chain.</li>
+<li>$H = \sum_{&lt;i,j&gt;} (X_iX_j + Y_iY_j + Z_iZ_j)/4$</li>
+</ol>
+</li>
+<li>Goal: Find the ground state energy of $H$</li>
 </ul>
 
             </section>
@@ -116,7 +122,11 @@
     
         <section >
             
-            <h2>SDP formulation</h2>
+            <h2>Variational Method</h2>
+<ul>
+<li>Anstaz: $\psi(\vec{\theta})$</li>
+</ul>
+<p><img src="image.png" alt="Variational Picture" width="50%"></p>
 
             </section>
     
@@ -126,9 +136,84 @@
     
         <section >
             
-            <h2>First Relaxation</h2>
-<hr>
-<h2>Second Relaxation</h2>
+            <h2>SDP Method</h2>
+<ul>
+<li>$\rho^{(2)}$: two site reduced density matrix</li>
+<li>Goal: Find $\rho^{(2)}$ that minimizes $Tr(h_{loc}\rho^{(2)})$</li>
+<li>Constraints:
+<ol>
+<li>$\rho^{(2)} \geq 0$, $Tr(\rho^{(2)}) = 1$</li>
+<li>$\rho^{k-1} = Tr_{L}(\rho^{k}) = Tr_{R}(\rho^{k})$, $k = 2,3,…,n$</li>
+<li>$\rho^{k} \geq 0$</li>
+</ol>
+</li>
+</ul>
+
+            </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3>Pictorially</h3>
+<p><img src="image-1.png" alt="SDP method" width="30%"></p>
+
+            </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3>Result and Analysis</h3>
+<ul>
+<li>Code</li>
+<li>Exponential amount of constraints in $n$.
+<img src="image-4.png" alt="alt text" width="50%"></li>
+</ul>
+
+            </section>
+    
+
+
+
+    
+        <section >
+            
+            <h2>Coarse Graining</h2>
+<ul>
+<li>Not all constraints on $\rho^{(k)}$ are necessary</li>
+<li>Constraints related to ground states are important</li>
+</ul>
+
+            </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3>How to obtain constraints?</h3>
+<ul>
+<li>Obtain ground state of $H$ using variational method</li>
+<li>VUMPS algorithm are problematic</li>
+</ul>
+
+            </section>
+    
+
+
+
+    
+        <section >
+            
+            <h3>Problem with VUMPS</h3>
+<p><img src="image-3.png" alt="Convergence we'd expect" width="50%"></p>
+<p><img src="image-5.png" alt="Convergence we got"></p>
 
             </section>
     
