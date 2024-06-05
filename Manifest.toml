@@ -1,6 +1,6 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.10.3"
+julia_version = "1.10.4"
 manifest_format = "2.0"
 project_hash = "821ad2435b1f1ec8c993dd37a4f9d84101bc3782"
 
@@ -105,9 +105,9 @@ version = "0.1.0"
 
 [[deps.BitBasis]]
 deps = ["LinearAlgebra", "StaticArrays"]
-git-tree-sha1 = "1c7997fce2a59bba98b080e07581069958548f8d"
+git-tree-sha1 = "1db4ceeeac1315d297ea45c0916a7b801741335e"
 uuid = "50ba71b6-fa0f-514d-ae9a-0916efc90dcf"
-version = "0.9.2"
+version = "0.9.3"
 
 [[deps.Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -739,9 +739,9 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[deps.Mosek]]
 deps = ["Libdl", "Pkg", "Printf", "SparseArrays"]
-git-tree-sha1 = "d745a2a4a0f71c4bcc8a3f5be3aff9feade3f644"
+git-tree-sha1 = "3b3f443422b385733fcc52da0a8de8607cd85482"
 uuid = "6405355b-0ac2-5fba-af84-adbd65488c0e"
-version = "10.1.4"
+version = "10.2.0"
 
 [[deps.MosekTools]]
 deps = ["MathOptInterface", "Mosek", "Printf"]

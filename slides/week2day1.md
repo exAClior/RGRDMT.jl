@@ -84,4 +84,4 @@ height: 800
 
 ![Convergence we'd expect](image-3.png){ width=50% }
 
-![Convergence we got](image-5.png){ width=70% }
+![Convergence we got](image-5.png){ width=50% }
