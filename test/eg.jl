@@ -14,4 +14,4 @@ using Yao
 # ψ_gs, _ = find_groundstate(ψ0, H0, VUMPS());
 # expectation_value(ψ_gs, H0)
 
-# tfi analytic is 1/π%
+# tfi analytic is 1/π

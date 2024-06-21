@@ -13,6 +13,6 @@ include("isometries.jl")
 export CGmapping_from_AL, approx_ground_state, good_ground_state
 
 include("loader.jl")
-export load_MPS
+export load_MPS, load_Hamiltonian
 
 end

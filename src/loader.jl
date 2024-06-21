@@ -1,3 +1,8 @@
+function load_Hamiltonian(filename::String)
+    vars = matread(filename)
+    return vars["H"], vars["Eexact"]
+end
+
 function load_MPS(filename::String, D::Integer)
     d = 2
     vars = matread(filename)
@@ -13,5 +18,5 @@ function load_MPS(filename::String, D::Integer)
     C = TensorMap(MPSDn["C"], ℂ^D, ℂ^D)
     ψ = InfiniteMPS([AL], [AR], [C], [AC])
 
-    return ψ, upperBdFromMPS[D], vars["Eexact"]
+    return ψ, upperBdFromMPS[D]
 end

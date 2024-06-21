@@ -1,7 +1,6 @@
-
 function one_step_approx(h::AbstractMatrix{V}, n::Integer, optimizer=SCS.Optimizer) where {V}
     d = 2 # spin physical dimension
-    ρs = [HermitianSemidefinite(d^ii, d^ii) for ii in 2:n]
+    ρs = [HermitianSemidefinite(d^sites) for sites in 2:n]
 
     constraints = Constraint[
         tr(ρs[1])==1.0,
