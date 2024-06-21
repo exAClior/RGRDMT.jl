@@ -115,14 +115,14 @@ XXXH = heisenberg_XXX(; spin=1 // 2)
 
 optimize_steps = Float64[]
 function finalize(iter, ψ, H, envs)
-    push!(optimize_steps, real(expectation_value(ψ,H)[1]))
-    return ψ, envs 
+    push!(optimize_steps, real(expectation_value(ψ, H)[1]))
+    return ψ, envs
 end
-groundstate, cache,delta = find_groundstate(
-    state, XXXH, VUMPS(;tol_galerkin=1e-5, verbose=false,finalize=finalize) 
+groundstate, cache, delta = find_groundstate(
+    state, XXXH, VUMPS(; tol_galerkin=1e-5, verbose=false, finalize=finalize)
 )
 
-E_exact = 1/4 - log(2)
+E_exact = 1 / 4 - log(2)
 
 δEs = optimize_steps .- E_exact
 
