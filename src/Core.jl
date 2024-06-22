@@ -56,34 +56,45 @@ function two_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer,
     set_string_names_on_creation(model, false)
     d = 2 # spin physical dimension
     k0 = floor(2 * log(D) / log(d)) + 1
-    ρ3 = @variable(model, [1:d^(k0+1), 1:d^(k0+1)] in HermitianPSDCone())
 
-    idmat = diagm(ones(eltype(h), d))
+    ρ = @variable(model, [1:d^(k0+1), 1:d^(k0+1)] in SymmetricMatrixSpace())
 
-    ωs = [@variable(model, [1:d^2*D^2, 1:d^2*D^2] in HermitianPSDCone()) for _ in (k0+2):n]
+    ωs = [@variable(model, [1:d^2*D^2, 1:d^2*D^2] in SymmetricMatrixSapce()) for _ in k0:n-2]
 
-    @constraint(model, tr(ρ3) == 1.0)
+    @constraint(model, ρ in PSDCone())
+    for ii in 1:n-(k0+3)
+        @constraint(model, ωs[ii] in PSDCone())
+    end
+
     @constraint(model,
-        partialtrace(ρ3, 1, d * ones(Int64, k0 + 1)) .== partialtrace(ρ3, k0 + 1, d * ones(Int64, k0 + 1)))
+        partialtrace(ρ, 1, d * ones(Int64, k0 + 1)) .== partialtrace(ρ, k0 + 1, d * ones(Int64, k0 + 1)))
+
+    @constraint(model, tr(ρ) == 1.0)
+
+    sp_eyed = sparse(I, d, d)
+    W2xI = kron(W2, sp_eyed)
+    IxW2 = kron(sp_eyed, W2)
 
     @constraint(model,
-        kron(W2, idmat) * ρ3 * kron(W2, idmat)' .== partialtrace(ωs[1], 1, [d, D^2, d])
+        W2xI * ρ * W2xI' .== partialtrace(ωs[1], 1, [d, D^2, d])
     )
 
     @constraint(
         model,
-        kron(idmat, W2) * ρ3 * kron(idmat, W2)' .== partialtrace(ωs[1], 3, [d, D^2, d])
+        IxW2 * ρ3 * IxW2' .== partialtrace(ωs[1], 3, [d, D^2, d])
     )
 
-
+    LxI = kron(L2, sp_eyed) # why did he have different Ls and Rs?
+    IxR = kron(sp_eyed, R2)
     for ii in 2:n-(k0+1)
-        @constraint(model, kron(L2, idmat) * ωs[ii-1] * kron(L2, idmat)' .== partialtrace(ωs[ii], 1, [d, D^2, d]))
-        @constraint(model, kron(idmat, R2) * ωs[ii-1] * kron(idmat, R2)' .== partialtrace(ωs[ii], 3, [d, D^2, d]))
+        @constraint(model, LxI * ωs[ii-1] * LxI' .== partialtrace(ωs[ii], 1, [d, D^2, d]))
+        @constraint(model, IxR * ωs[ii-1] * IxR' .== partialtrace(ωs[ii], 3, [d, D^2, d]))
     end
 
-    @objective(model, Min, real(tr(kron(h, diagm(ones(eltype(h), d^(k0 - 1)))) * ρ3)))
+
+    @objective(model, Min, real(tr(kron(h, sparse(I, d^(k0 - 1), d^(k0 - 1))) * ρ)))
 
     optimize!(model)
-    return model
+    return objective_value(model)
 end
 

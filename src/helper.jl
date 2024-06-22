@@ -42,8 +42,8 @@ function main2(h::AbstractMatrix{T}, D::Integer,
     vals = Float64[]
     for n in n_rng
         println("Working on n = $n")
-        model = two_step_approx(h, k0, D, n, W2, L2, R2, optimizer)
-        push!(vals, objective_value(model))
+        val = two_step_approx(h, D, n, W2, L2, R2, optimizer)
+        push!(vals, val)
     end
 
     ΔErlxD = real.(E_exact .- vals)

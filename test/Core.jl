@@ -4,30 +4,12 @@ using SCS, MosekTools, Dualization
 using Random
 using JuMP
 
-# @testset "Performance" begin
-#     using BenchmarkTools
-#     n = 6
-#     optimizer = MosekTools.Optimizer
-#     h = mat(-kron(Z, Z) / 4 - 1 / 4 * kron(X, I2))
-#     problem = one_step_approx(h, n, dual_optimizer(optimizer)) # 7.74s 43.338MiB
-#     problem = one_step_approx(h, n, optimizer) # 20s didn't terminate 66.720MiB
-#     model = one_step_approx_jp(h, n, optimizer) # 13.53s 115212272 bytes
-#     model = one_step_approx_jp(h, n, dual_optimizer(optimizer)) # 10.62s
-# end
-
 function booda_dual()
     h = mat(-kron(Z, Z) / 4 - 1 / 4 * kron(X, I2))
-    main_dual(h, 3:10, -1 / π, "data/etfi_dual.csv", "data/ntfi_dual.csv", MosekTools.Optimizer)
+    main_dual(h, 3:10, -1 / π, "data/etfi_dual.csv", "data/ntfi_dual.csv", SCS.Optimizer)
 end
 
-booda_dual()
-
-function booda()
-    h = mat(-kron(Z, Z) / 4 - 1 / 4 * kron(X, I2))
-    main(h, 3:10, -1 / π, "data/etfi.csv", "data/ntfi.csv", dual_optimizer(MosekTools.Optimizer))
-end
-
-# booda()
+booda_dual() # this is currently the best option, could also try on Linux machinehttps://discourse.julialang.org/t/multi-core-parallel-support-for-jump-supported-solvers/112392/3 
 
 function booda2()
     h = mat(-kron(Z, Z) / 4 - 1 / 4 * kron(X, I2))
@@ -44,14 +26,12 @@ function booda2()
     main2(h, D, -1 / π, 5:12, V0, L, R, "data/etfi2.csv", "data/ntfi2.csv", dual_optimizer(MosekTools.Optimizer))
 end
 
-# booda2()
-
-function dooda()
+function dooda_dual()
     h = mat(-kron(X, X) - kron(Y, Y) + kron(Z, Z)) / 4
-    main(h, 11:13, 1 / 4 - log(2), "data/exxx.csv", "data/nxxx.csv", dual_optimizer(MosekTools.Optimizer))
+    main(h, 3:10, 1 / 4 - log(2), "data/exxx.csv", "data/nxxx.csv", SCS.Optimizer)
 end
 
-dooda()
+dooda_dual()
 
 function dooda2()
     h = mat(-kron(X, X) - kron(Y, Y) + kron(Z, Z)) / 4
