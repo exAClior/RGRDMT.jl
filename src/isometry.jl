@@ -1,10 +1,10 @@
-function CGmapping_from_AL(AL::AbstractTensorMap, k0::Integer)
-    D = dim(domain(AL))
-    d = dims(codomain(AL))[2]
+function CGmapping_from_AL(AL::AbstractTensorMap, k0::Integer, n::Integer)
+    D = space(domain(AL), 1)
+    d = space(codomain(AL), 2)
 
     D^2 <= d^k0 || throw(ArgumentError("D^2 must be less than d^k0"))
 
-    iDmat = diagm(ones(eltype(AL[]), D))
+    iDmat = sparse(I, D, D)
 
     indVecs = [[-(k0 + 1) -1 1], [[l -(l + 1) l + 1] for l in 1:k0-2]..., [(k0 - 1) -k0 -(k0 + 2)]]
 

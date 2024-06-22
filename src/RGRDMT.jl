@@ -10,7 +10,7 @@ using SparseArrays, KrylovKit
 using DelimitedFiles
 
 include("Core.jl")
-export one_step_approx, two_step_approx
+export two_step_approx
 export one_step_approx_dual
 
 include("isometry.jl")
@@ -20,6 +20,6 @@ include("loader.jl")
 export load_MPS, load_Hamiltonian
 
 include("helper.jl")
-export main, main2, main_dual
+export main2, main_dual
 
 end

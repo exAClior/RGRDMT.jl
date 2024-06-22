@@ -15,20 +15,23 @@ function booda2()
     h = mat(-kron(Z, Z) / 4 - 1 / 4 * kron(X, I2))
     H = transverse_field_ising(; J=1 / 4)
     d = 2
-    D = rand(2:7)
+    D = 4
     ψ_good = good_ground_state(H, 30)
     ψ = approx_ground_state(H, ψ_good, d, D)
     @test real(expectation_value(ψ, H)[]) ≈ -1 / π atol = 1e-3
     AL = ψ.AL[]
 
+    k0 = Int(floor(2 * log(D) / log(d)) + 1)
     V0, L, R = CGmapping_from_AL(AL, k0)
 
-    main2(h, D, -1 / π, 5:12, V0, L, R, "data/etfi2.csv", "data/ntfi2.csv", dual_optimizer(MosekTools.Optimizer))
+    main2(h, D, -1 / π, 8:12, V0, L, R, "data/etfi2.csv", "data/ntfi2.csv", MosekTools.Optimizer)
 end
+
+booda2()
 
 function dooda_dual()
     h = mat(-kron(X, X) - kron(Y, Y) + kron(Z, Z)) / 4
-    main(h, 3:10, 1 / 4 - log(2), "data/exxx.csv", "data/nxxx.csv", SCS.Optimizer)
+    main_dual(h, 3:13, 1 / 4 - log(2), "data/exxx.csv", "data/nxxx.csv", MosekTools.Optimizer)
 end
 
 dooda_dual()

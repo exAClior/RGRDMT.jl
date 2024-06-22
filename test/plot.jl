@@ -1,5 +1,6 @@
 using RGRDMT, Test
 using CairoMakie
+using DelimitedFiles
 
 function my_plot(eng_filenames::Vector{String}, n_filenames::Vector{String})
     f = Figure()
@@ -24,15 +25,16 @@ function my_plot(eng_filenames::Vector{String}, n_filenames::Vector{String})
         push!(plot_objs, plt_obj)
     end
 
-    labelnames = ["Reduced ρ", "Isometry, D=2"]
+    # labelnames = ["Reduced ρ", "Isometry, D=2"]
+    labelnames = ["Reduced ρ", "Reduced ρ Dual"]
     Legend(f[1, 2], plot_objs, labelnames)
     return f
 end
 
-# eng_filenames = ["data/etfi.csv", "data/etfi2.csv"]
-# n_filenames = ["data/ntfi.csv", "data/ntfi2.csv"]
+eng_filenames = ["data/etfi.csv", "data/etfi_dual.csv"]
+n_filenames = ["data/ntfi.csv", "data/ntfi_dual.csv"]
 
-eng_filenames = ["data/exxx.csv", "data/exxx2.csv"]
-n_filenames = ["data/nxxx.csv", "data/nxxx2.csv"]
+# eng_filenames = ["data/exxx.csv", "data/exxx2.csv"]
+# n_filenames = ["data/nxxx.csv", "data/nxxx2.csv"]
 
 cur_plt = my_plot(eng_filenames, n_filenames)

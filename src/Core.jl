@@ -29,25 +29,6 @@ function one_step_approx_dual(h::AbstractMatrix{V}, n::Integer, optimizer=SCS.Op
     return ElocTIRig, ElocTI
 end
 
-function one_step_approx(h::AbstractMatrix{V}, n::Integer, optimizer=SCS.Optimizer) where {V}
-    model = Model(optimizer)
-    set_string_names_on_creation(model, false)
-    d = 2 # spin physical dimension
-    ρs = [@variable(model, [1:d^sites, 1:d^sites] in HermitianPSDCone()) for sites in 2:n]
-
-    @constraint(model, tr(ρs[1]) == 1.0)
-
-    for ii in 3:n
-        @constraint(model, ρs[ii-2] .== partialtrace(ρs[ii-1], 1, d * ones(Int64, ii)))
-        @constraint(model, ρs[ii-2] .== partialtrace(ρs[ii-1], ii, d * ones(Int64, ii)))
-    end
-
-    @objective(model, Min, real(tr(h * ρs[1])))
-
-    optimize!(model)
-    return model
-end
-
 function two_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer,
     W2::AbstractMatrix{T}, L2::AbstractMatrix{T}, R2::AbstractMatrix{T},
     optimizer=SCS.Optimizer) where {V,T}
@@ -55,11 +36,11 @@ function two_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer,
     model = Model(optimizer)
     set_string_names_on_creation(model, false)
     d = 2 # spin physical dimension
-    k0 = floor(2 * log(D) / log(d)) + 1
+    k0 = Int(floor(2 * log(D) / log(d)) + 1)
 
     ρ = @variable(model, [1:d^(k0+1), 1:d^(k0+1)] in SymmetricMatrixSpace())
 
-    ωs = [@variable(model, [1:d^2*D^2, 1:d^2*D^2] in SymmetricMatrixSapce()) for _ in k0:n-2]
+    ωs = [@variable(model, [1:d^2*D^2, 1:d^2*D^2] in SymmetricMatrixSpace()) for _ in k0:n-2]
 
     @constraint(model, ρ in PSDCone())
     for ii in 1:n-(k0+3)
@@ -81,7 +62,7 @@ function two_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer,
 
     @constraint(
         model,
-        IxW2 * ρ3 * IxW2' .== partialtrace(ωs[1], 3, [d, D^2, d])
+        IxW2 * ρ * IxW2' .== partialtrace(ωs[1], 3, [d, D^2, d])
     )
 
     LxI = kron(L2, sp_eyed) # why did he have different Ls and Rs?
