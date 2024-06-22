@@ -9,7 +9,6 @@ using MAT
 
 include("Core.jl")
 export one_step_approx, two_step_approx
-export one_step_approx_jp
 
 include("isometry.jl")
 export CGmapping_from_AL, approx_ground_state, good_ground_state

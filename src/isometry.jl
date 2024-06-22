@@ -47,7 +47,7 @@ function good_ground_state(H::MPOHamiltonian{T}, D::Integer) where {T}
     state = InfiniteMPS([A])
 
     groundstate, _, _ = find_groundstate(
-        state, H, VUMPS(; tol_galerkin=1e-10, maxiter=500)
+        state, H, VUMPS(; tol_galerkin=1e-10, maxiter=200)
     )
 
     return groundstate
