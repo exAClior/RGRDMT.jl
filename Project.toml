@@ -6,6 +6,7 @@ version = "1.0.0-DEV"
 [deps]
 Convex = "f65535da-76fb-5f13-bab9-19810c17039a"
 Dualization = "191a621a-6537-11e9-281d-650236a99e60"
+JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MAT = "23992714-dd62-5051-b70f-ba57cb901cac"
 MPSKit = "bb1c41ca-d63c-52ed-829e-0820dda26502"

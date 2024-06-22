@@ -1,3 +1,23 @@
+
+function one_step_approx_jp(h::AbstractMatrix{V}, n::Integer, optimizer=SCS.Optimizer) where {V}
+    model = Model(optimizer)
+    set_string_names_on_creation(model, false)
+    d = 2 # spin physical dimension
+    ρs = [@variable(model, [1:d^sites, 1:d^sites] in HermitianPSDCone()) for sites in 2:n]
+
+    @constraint(model, tr(ρs[1]) == 1.0)
+
+    for ii in 3:n
+        @constraint(model, ρs[ii-2] .== partialtrace(ρs[ii-1], 1, d * ones(Int64, ii)))
+        @constraint(model, ρs[ii-2] .== partialtrace(ρs[ii-1], ii, d * ones(Int64, ii)))
+    end
+
+    @objective(model, Min, real(tr(h * ρs[1])))
+
+    optimize!(model)
+    return model
+end
+
 function one_step_approx(h::AbstractMatrix{V}, n::Integer, optimizer=SCS.Optimizer) where {V}
     d = 2 # spin physical dimension
     ρs = [HermitianSemidefinite(d^sites) for sites in 2:n]
@@ -9,7 +29,7 @@ function one_step_approx(h::AbstractMatrix{V}, n::Integer, optimizer=SCS.Optimiz
     ]
     problem = minimize(real(tr(h * ρs[1])), constraints)
 
-    solve!(problem, optimizer; silent=true)
+    solve!(problem, optimizer)
     return problem
 end
 
