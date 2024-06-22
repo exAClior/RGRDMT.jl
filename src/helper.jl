@@ -1,0 +1,52 @@
+function main_dual(h::AbstractMatrix{V}, n_rng::UnitRange{Int},
+    E_exact::Float64, efilename::String, nfilename::String,
+    optimizer=SCS.Optimizer) where {V}
+
+    vals = Float64[]
+    for n in n_rng
+        println("Working on n = $n")
+        lower_bound, _ = one_step_approx_dual(h, n, optimizer)
+        push!(vals, lower_bound)
+        ΔELTI = real.(E_exact .- vals)
+        writedlm(efilename, ΔELTI, ',')
+        writedlm(nfilename, n_rng, ',')
+    end
+end
+
+function main(h::AbstractMatrix{V}, n_rng::UnitRange{Int},
+    E_exact::Float64, efilename::String, nfilename::String,
+    optimizer=SCS.Optimizer) where {V}
+
+    vals = Float64[]
+    for n in n_rng
+        println("Working on n = $n")
+        if n >= 8
+            optimizer = dual_optimizer(SCS.Optimizer)
+        else
+            optimizer = dual_optimizer(MosekTools.Optimizer)
+        end
+        model = one_step_approx(h, n, optimizer)
+        push!(vals, objective_value(model))
+        ΔELTI = real.(E_exact .- vals)
+        writedlm(efilename, ΔELTI, ',')
+        writedlm(nfilename, n_rng, ',')
+    end
+end
+
+function main2(h::AbstractMatrix{T}, D::Integer,
+    E_exact::Float64, n_rng::UnitRange{Int},
+    W2::AbstractMatrix{T}, L2::AbstractMatrix{T}, R2::AbstractMatrix{T},
+    efilename::String, nfilename::String,
+    optimizer=MosekTools.Optimizer) where {T}
+
+    vals = Float64[]
+    for n in n_rng
+        println("Working on n = $n")
+        model = two_step_approx(h, k0, D, n, W2, L2, R2, optimizer)
+        push!(vals, objective_value(model))
+    end
+
+    ΔErlxD = real.(E_exact .- vals)
+    writedlm(efilename, ΔErlxD, ',')
+    writedlm(nfilename, n_rng, ',')
+end

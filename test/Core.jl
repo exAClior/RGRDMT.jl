@@ -2,8 +2,6 @@ using Test, RGRDMT, Yao
 using MPSKit, MPSKitModels, TensorKit
 using SCS, MosekTools, Dualization
 using Random
-using DelimitedFiles
-using Plots
 using JuMP
 
 # @testset "Performance" begin
@@ -17,79 +15,58 @@ using JuMP
 #     model = one_step_approx_jp(h, n, dual_optimizer(optimizer)) # 10.62s
 # end
 
-function main_jp(h::AbstractMatrix{V}, n_rng::UnitRange{Int},
-    E_exact::Float64, efilename::String, nfilename::String,
-    optimizer=SCS.Optimizer) where {V}
-
-    vals = Float64[]
-    for n in n_rng
-        println("Working on n = $n")
-        model = one_step_approx_jp(h, n, optimizer)
-        push!(vals, objective_value(model))
-        ΔELTI = real.(E_exact .- vals)
-        writedlm(efilename, ΔELTI, ',')
-        writedlm(nfilename, n_rng, ',')
-    end
+function booda_dual()
+    h = mat(-kron(Z, Z) / 4 - 1 / 4 * kron(X, I2))
+    main_dual(h, 3:10, -1 / π, "data/etfi_dual.csv", "data/ntfi_dual.csv", MosekTools.Optimizer)
 end
 
-function main2_jp(h::AbstractMatrix{T}, k0::Integer, D::Integer,
-    E_exact::Float64, n_rng::UnitRange{Int},
-    W2::AbstractMatrix{T}, L2::AbstractMatrix{T}, R2::AbstractMatrix{T},
-    optimizer=MosekTools.Optimizer) where {T}
-
-    vals = Float64[]
-    for n in n_rng
-        println("Working on n = $n")
-        model = two_step_approx(h, k0, D, n, W2, L2, R2, optimizer)
-        push!(vals, objective_value(model))
-    end
-
-    ΔErlxD = real.(E_exact .- vals)
-    writedlm("erlxd$D.csv", ΔErlxD, ',')
-    writedlm("nd$D.csv", n_rng, ',')
-end
-
-function my_plot(eng_filenames::Vector{String}, n_filenames::Vector{String})
-    plt = Plots.plot(
-        xlabel="log2(n)",
-        ylabel="log10(ΔE)",
-        ylims=(1e-6, 1e-1),
-        yticks=[1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1],
-        yscale=:log10,
-        xlims=(2, 64),
-        xscale=:log2,
-    )
-    for (efname, nfname) in zip(eng_filenames, n_filenames)
-        ΔE = readdlm(efname, ',')
-        n = readdlm(nfname, ',')
-        Plots.plot!(plt, n, ΔE, label=efname[1:end-7], legend=:topright)
-    end
-    return plt
-end
-
+booda_dual()
 
 function booda()
     h = mat(-kron(Z, Z) / 4 - 1 / 4 * kron(X, I2))
-    main_jp(h, 3:10, -1 / π, "data/etfi.csv", "data/ntfi.csv", dual_optimizer(MosekTools.Optimizer))
-
-    eng_filenames = ["data/etfi.csv"]
-    n_filenames = ["data/ntfi.csv"]
-    # eng_filenames = ["elti.csv", "erlxd2.csv", "erlxd5.csv"]
-    # n_filenames = ["n_exact.csv", "nd2.csv", "nd5.csv"]
-
-    cur_plt = my_plot(eng_filenames, n_filenames)
+    main(h, 3:10, -1 / π, "data/etfi.csv", "data/ntfi.csv", dual_optimizer(MosekTools.Optimizer))
 end
 
-booda()
+# booda()
+
+function booda2()
+    h = mat(-kron(Z, Z) / 4 - 1 / 4 * kron(X, I2))
+    H = transverse_field_ising(; J=1 / 4)
+    d = 2
+    D = rand(2:7)
+    ψ_good = good_ground_state(H, 30)
+    ψ = approx_ground_state(H, ψ_good, d, D)
+    @test real(expectation_value(ψ, H)[]) ≈ -1 / π atol = 1e-3
+    AL = ψ.AL[]
+
+    V0, L, R = CGmapping_from_AL(AL, k0)
+
+    main2(h, D, -1 / π, 5:12, V0, L, R, "data/etfi2.csv", "data/ntfi2.csv", dual_optimizer(MosekTools.Optimizer))
+end
+
+# booda2()
 
 function dooda()
     h = mat(-kron(X, X) - kron(Y, Y) + kron(Z, Z)) / 4
-    main_jp(h, 3:10, 1 / 4 - log(2), "data/exxx.csv", "data/nxxx.csv", dual_optimizer(MosekTools.Optimizer))
-
-    eng_filenames = ["data/exxx.csv"]
-    n_filenames = ["data/nxxx.csv"]
-
-    cur_plt = my_plot(eng_filenames, n_filenames)
+    main(h, 11:13, 1 / 4 - log(2), "data/exxx.csv", "data/nxxx.csv", dual_optimizer(MosekTools.Optimizer))
 end
 
 dooda()
+
+function dooda2()
+    h = mat(-kron(X, X) - kron(Y, Y) + kron(Z, Z)) / 4
+    d = 2
+    filename = "data/HeisenbergSpinHalf_SubLatticeRotation_Data.mat"
+    D = rand(2:7)
+    ψ, upperBd = load_MPS(filename, D)
+    AL = ψ.AL[]
+
+    V0, L, R = CGmapping_from_AL(AL, k0)
+    V0 = Complex.(V0)
+    L = Complex.(L)
+    R = Complex.(R)
+
+    main2(h, D, 1 / 4 - log(2), 5:12, V0, L, R, "data/exxx2.csv", "data/nxxx2.csv", dual_optimizer(MosekTools.Optimizer))
+end
+
+dooda2()

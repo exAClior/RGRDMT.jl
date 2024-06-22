@@ -2,7 +2,7 @@ function CGmapping_from_AL(AL::AbstractTensorMap, k0::Integer)
     D = dim(domain(AL))
     d = dims(codomain(AL))[2]
 
-    D^2 < d^k0 || throw(ArgumentError("D^2 must be less than d^k0"))
+    D^2 <= d^k0 || throw(ArgumentError("D^2 must be less than d^k0"))
 
     iDmat = diagm(ones(eltype(AL[]), D))
 

@@ -1,3 +1,34 @@
+function one_step_approx_dual(h::AbstractMatrix{V}, n::Integer, optimizer=SCS.Optimizer) where {V}
+
+    if all(isreal, h)
+        h = real(h)
+    else
+        throw(ArgumentError("Hamiltonian must be real"))
+    end
+
+    model = Model(optimizer)
+    set_string_names_on_creation(model, false)
+    d = 2 # spin physical dimension
+
+    α = @variable(model, [1:d^(n-1), 1:d^(n-1)] in SymmetricMatrixSpace())
+
+    @variable(model, ϵ)
+
+    @expression(model, expr, kron(h, sparse(I, d^(n - 2), d^(n - 2))) + kron(sparse(I, d, d), α) - kron(α, sparse(I, d, d)) - ϵ .* sparse(I, d^n, d^n))
+
+    @constraint(model, expr >= 0, PSDCone())
+    @objective(model, Max, ϵ)
+
+    optimize!(model)
+
+    ElocTI = value(ϵ)
+    expr = value.(expr)
+    minEig, _, _ = eigsolve(expr, rand(eltype(expr), size(expr, 1)), 1, :SR)
+    minEig = minEig[1]
+    ElocTIRig = value(ϵ) + minEig
+    return ElocTIRig, ElocTI
+end
+
 function one_step_approx(h::AbstractMatrix{V}, n::Integer, optimizer=SCS.Optimizer) where {V}
     model = Model(optimizer)
     set_string_names_on_creation(model, false)
@@ -17,16 +48,14 @@ function one_step_approx(h::AbstractMatrix{V}, n::Integer, optimizer=SCS.Optimiz
     return model
 end
 
-function two_step_approx(h::AbstractMatrix{V}, k0::Integer, D::Integer, n::Integer,
+function two_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer,
     W2::AbstractMatrix{T}, L2::AbstractMatrix{T}, R2::AbstractMatrix{T},
     optimizer=SCS.Optimizer) where {V,T}
 
     model = Model(optimizer)
     set_string_names_on_creation(model, false)
     d = 2 # spin physical dimension
-
-    D^2 < d^(k0) || throw(ArgumentError("D^2 must be greater than d^k0"))
-
+    k0 = floor(2 * log(D) / log(d)) + 1
     ρ3 = @variable(model, [1:d^(k0+1), 1:d^(k0+1)] in HermitianPSDCone())
 
     idmat = diagm(ones(eltype(h), d))
@@ -36,12 +65,14 @@ function two_step_approx(h::AbstractMatrix{V}, k0::Integer, D::Integer, n::Integ
     @constraint(model, tr(ρ3) == 1.0)
     @constraint(model,
         partialtrace(ρ3, 1, d * ones(Int64, k0 + 1)) .== partialtrace(ρ3, k0 + 1, d * ones(Int64, k0 + 1)))
+
     @constraint(model,
         kron(W2, idmat) * ρ3 * kron(W2, idmat)' .== partialtrace(ωs[1], 1, [d, D^2, d])
     )
+
     @constraint(
         model,
-        kron(idmat, W2) * ρ3 * kron(idmat, W2)' == partialtrace(ωs[1], 3, [d, D^2, d])
+        kron(idmat, W2) * ρ3 * kron(idmat, W2)' .== partialtrace(ωs[1], 3, [d, D^2, d])
     )
 
 
