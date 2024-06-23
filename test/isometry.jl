@@ -13,7 +13,7 @@ using SparseArrays
     @test expectation_value(ψ_good, H)[] ≈ -1 / π
 
     ψ = approx_ground_state(H, ψ_good, d, D)
-    @test expectation_value(ψ_good, H)[] ≈ -1 / π
+    @test real(expectation_value(ψ, H)[]) ≈ -1 / π atol=1e-4
 
     AL = ψ.AL[]
 
@@ -22,6 +22,9 @@ using SparseArrays
     # why do we have such long compilation time?
     V0, L, R = CGmapping_from_AL(AL, k0, n)
     sp_eyed = sparse(I, d, d)
+    L
+    L * L'
+    @test L * L' ≈ diagm(ones(eltype(AL), D^2))
     @test R * R' ≈ diagm(ones(eltype(AL), D^2))
     @test L * kron(sp_eyed, V0) ≈ R * kron(V0, sp_eyed)
 end

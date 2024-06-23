@@ -9,25 +9,25 @@ function booda_dual()
     main_dual(h, 3:10, -1 / π, "data/etfi_dual.csv", "data/ntfi_dual.csv", SCS.Optimizer)
 end
 
-booda_dual() # this is currently the best option, could also try on Linux machinehttps://discourse.julialang.org/t/multi-core-parallel-support-for-jump-supported-solvers/112392/3 
+# booda_dual() # this is currently the best option, could also try on Linux machinehttps://discourse.julialang.org/t/multi-core-parallel-support-for-jump-supported-solvers/112392/3 
 
-function booda2()
+function booda2(D)
     h = mat(-kron(Z, Z) / 4 - 1 / 4 * kron(X, I2))
     H = transverse_field_ising(; J=1 / 4)
     d = 2
-    D = 2
-    ψ_good = good_ground_state(H, 50)
-    ψ = approx_ground_state(H, ψ_good, d, D)
-    @test real(expectation_value(ψ, H)[]) ≈ -1 / π atol = 1e-3
+    ψ = good_ground_state(H, D)
+    # @test real(expectation_value(ψ_good, H)[]) ≈ -1 / π atol = 1e-10
+    # ψ = approx_ground_state(H, ψ_good, d, D)
+    # @test real(expectation_value(ψ, H)[]) ≈ -1 / π atol = 1e-3
     AL = ψ.AL[]
 
     k0 = Int(floor(2 * log(D) / log(d)) + 1)
     V0, L, R = CGmapping_from_AL(AL, k0, k0 + 2)
 
-    main2(h, D, -1 / π, 8:12, V0, L, R, "data/etfi2.csv", "data/ntfi2.csv", MosekTools.Optimizer)
+    main2(h, D, -1 / π, 6:2:30, V0, L, R, "data/etfi$D.csv", "data/ntfi$D.csv", MosekTools.Optimizer)
 end
 
-booda2()
+booda2(3)
 
 function dooda_dual()
     h = mat(-kron(X, X) - kron(Y, Y) + kron(Z, Z)) / 4
