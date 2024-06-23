@@ -30,16 +30,17 @@ function my_plot(eng_filenames::Vector{String}, n_filenames::Vector{String})
     return f
 end
 
-# eng_filenames = ["data/etfi.csv", "data/etfi_dual.csv"]
-# n_filenames = ["data/ntfi.csv", "data/ntfi_dual.csv"]
+eng_filenames = vcat(["data/etfi.csv"], ["data/etfi$D.csv" for D in 2:3])
+
+n_filenames = vcat(["data/ntfi.csv"], ["data/ntfi$D.csv" for D in 2:3])
 
 
-eng_filenames = vcat(["data/exxx.csv"], ["data/exxx$D.csv" for D in 2:3])
+# eng_filenames = vcat(["data/exxx.csv"], ["data/exxx$D.csv" for D in 2:3])
 
-n_filenames = vcat(["data/nxxx.csv"], ["data/nxxx$D.csv" for D in 2:3])
+# n_filenames = vcat(["data/nxxx.csv"], ["data/nxxx$D.csv" for D in 2:3])
 
 
 
 cur_plt = my_plot(eng_filenames, n_filenames)
 
-save("test.png", cur_plt, px_per_unit=2)
+save("test_tfi.png", cur_plt, px_per_unit=2)

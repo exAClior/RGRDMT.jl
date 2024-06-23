@@ -65,11 +65,13 @@ function two_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer,
         IxW2 * ρ * IxW2' .== partialtrace(ωs[1], 3, [d, D^2, d])
     )
 
-    LxI = kron(L2, sp_eyed) # why did he have different Ls and Rs?
-    IxR = kron(sp_eyed, R2)
-    for ii in 2:n-(k0+1)
-        @constraint(model, LxI * ωs[ii-1] * LxI' .== partialtrace(ωs[ii], 1, [d, D^2, d]))
-        @constraint(model, IxR * ωs[ii-1] * IxR' .== partialtrace(ωs[ii], 3, [d, D^2, d]))
+    if k0 <= n -2
+        LxI = kron(L2, sp_eyed) 
+        IxR = kron(sp_eyed, R2)
+        for ii in 2:n-(k0+1)
+            @constraint(model, LxI * ωs[ii-1] * LxI' .== partialtrace(ωs[ii], 1, [d, D^2, d]))
+            @constraint(model, IxR * ωs[ii-1] * IxR' .== partialtrace(ωs[ii], 3, [d, D^2, d]))
+        end
     end
 
 

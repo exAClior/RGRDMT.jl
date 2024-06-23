@@ -22,9 +22,6 @@ using SparseArrays
     # why do we have such long compilation time?
     V0, L, R = CGmapping_from_AL(AL, k0, n)
     sp_eyed = sparse(I, d, d)
-    L
-    L * L'
-    @test L * L' ≈ diagm(ones(eltype(AL), D^2))
     @test R * R' ≈ diagm(ones(eltype(AL), D^2))
     @test L * kron(sp_eyed, V0) ≈ R * kron(V0, sp_eyed)
 end
@@ -47,7 +44,7 @@ end
 
     V0, L, R = CGmapping_from_AL(AL, k0, n)
     sp_eyed = sparse(I, d, d)
-    @test R * R' ≈ diagm(ones(eltype(AL), D^2))
+    @test R * R' ≈ diagm(ones(eltype(AL), D^2)) # since we are using AL
     @test L * kron(sp_eyed, V0) ≈ R * kron(V0, sp_eyed)
 end
 

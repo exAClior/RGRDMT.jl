@@ -21,7 +21,7 @@ function CGmapping_from_AL(AL::AbstractTensorMap, k0::Integer, n::Integer)
     V0 = Matrix(reshape(ψ_finite, D^2, d^k0))
 
     if n == k0
-        return V0, typeof(mpsInflatedL)[], typeof(mpsInflatedR)[]
+        return V0, sparse(one(eltype(V0))*I,D^2, (D^2)*d), sparse(one(eltype(V0))*I,D^2, D^2*d) 
     else
         L = reshape(permutedims(mpsInflatedL, (1, 3, 2)), D^2, (D^2) * d)
         R = reshape(permutedims(mpsInflatedR, (3, 2, 1)), D^2, (D^2) * d)
@@ -36,7 +36,7 @@ function good_ground_state(H::MPOHamiltonian{T}, D::Integer) where {T}
     state = InfiniteMPS([A])
 
     groundstate, _, _ = find_groundstate(
-        state, H, VUMPS(; tol_galerkin=1e-10, maxiter=200)
+        state, H, VUMPS(; tol_galerkin=1e-14, maxiter=400)
     )
 
     return groundstate
