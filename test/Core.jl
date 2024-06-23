@@ -39,9 +39,8 @@ end
 function dooda2()
     h = mat(-kron(X, X) - kron(Y, Y) + kron(Z, Z)) / 4
     d = 2
-    filename = "data/HeisenbergSpinHalf_SubLatticeRotation_Data.mat"
     D = 4
-    # D = rand(2:7)
+    filename = "data/HeisenbergSpinHalf_SubLatticeRotation_Data.mat"
     ψ, upperBd = load_MPS(filename, D)
     AL = ψ.AL[]
 
@@ -51,7 +50,7 @@ function dooda2()
     L = Complex.(L)
     R = Complex.(R)
 
-    main2(h, D, 1 / 4 - log(2), 8:30, V0, L, R, "data/exxx2.csv", "data/nxxx2.csv", MosekTools.Optimizer)
+    main2(h, D, 1 / 4 - log(2), 8:2:30, V0, L, R, "data/exxx$D.csv", "data/nxxx$D.csv", MosekTools.Optimizer)
 end
 
 dooda2()

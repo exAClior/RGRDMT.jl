@@ -25,8 +25,7 @@ function my_plot(eng_filenames::Vector{String}, n_filenames::Vector{String})
         push!(plot_objs, plt_obj)
     end
 
-    # labelnames = ["Reduced ρ", "Isometry, D=2"]
-    labelnames = ["Reduced ρ", "Reduced ρ Dual"]
+    labelnames = vcat(["Reduced ρ"], ["Isometry, D=$D" for D in 2:2+length(n_filenames)-2])
     Legend(f[1, 2], plot_objs, labelnames)
     return f
 end
@@ -34,8 +33,12 @@ end
 # eng_filenames = ["data/etfi.csv", "data/etfi_dual.csv"]
 # n_filenames = ["data/ntfi.csv", "data/ntfi_dual.csv"]
 
-eng_filenames = ["data/exxx.csv", "data/exxx2.csv"]
-n_filenames = ["data/nxxx.csv", "data/nxxx2.csv"]
+
+eng_filenames = vcat(["data/exxx.csv"], ["data/exxx$D.csv" for D in 2:3])
+
+n_filenames = vcat(["data/nxxx.csv"], ["data/nxxx$D.csv" for D in 2:3])
+
+
 
 cur_plt = my_plot(eng_filenames, n_filenames)
 

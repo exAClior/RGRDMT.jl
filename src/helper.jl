@@ -1,4 +1,4 @@
-function main_dual(h::AbstractMatrix{V}, n_rng::UnitRange{Int},
+function main_dual(h::AbstractMatrix{V}, n_rng::AbstractRange,
     E_exact::Float64, efilename::String, nfilename::String,
     optimizer=SCS.Optimizer) where {V}
 
@@ -14,7 +14,7 @@ function main_dual(h::AbstractMatrix{V}, n_rng::UnitRange{Int},
 end
 
 function main2(h::AbstractMatrix{T}, D::Integer,
-    E_exact::Float64, n_rng::UnitRange{Int},
+    E_exact::Float64, n_rng::AbstractRange,
     W2::AbstractMatrix{T}, L2::AbstractMatrix{T}, R2::AbstractMatrix{T},
     efilename::String, nfilename::String,
     optimizer=MosekTools.Optimizer) where {T}
