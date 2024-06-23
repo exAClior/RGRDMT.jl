@@ -31,10 +31,12 @@ function my_plot(eng_filenames::Vector{String}, n_filenames::Vector{String})
     return f
 end
 
-eng_filenames = ["data/etfi.csv", "data/etfi_dual.csv"]
-n_filenames = ["data/ntfi.csv", "data/ntfi_dual.csv"]
+# eng_filenames = ["data/etfi.csv", "data/etfi_dual.csv"]
+# n_filenames = ["data/ntfi.csv", "data/ntfi_dual.csv"]
 
-# eng_filenames = ["data/exxx.csv", "data/exxx2.csv"]
-# n_filenames = ["data/nxxx.csv", "data/nxxx2.csv"]
+eng_filenames = ["data/exxx.csv", "data/exxx2.csv"]
+n_filenames = ["data/nxxx.csv", "data/nxxx2.csv"]
 
 cur_plt = my_plot(eng_filenames, n_filenames)
+
+save("test.png", cur_plt, px_per_unit=2)

@@ -1,43 +1,32 @@
 function CGmapping_from_AL(AL::AbstractTensorMap, k0::Integer, n::Integer)
-    D = space(domain(AL), 1)
-    d = space(codomain(AL), 2)
+    D = dim(domain(AL))
+    d = dims(codomain(AL))[2]
 
     D^2 <= d^k0 || throw(ArgumentError("D^2 must be less than d^k0"))
 
-    iDmat = sparse(I, D, D)
-
-    indVecs = [[-(k0 + 1) -1 1], [[l -(l + 1) l + 1] for l in 1:k0-2]..., [(k0 - 1) -k0 -(k0 + 2)]]
-
-    ψ_finite = ncon(fill(AL[], k0), indVecs, output=[-k0 - 2, -k0 - 1, -k0:1:-1...])
-
-    ψ_finite = Matrix(reshape(ψ_finite, D^2, d^k0))
-    F = qr(ψ_finite')
-    V0k0 = Matrix(F.Q)'
-    Pk0 = Matrix(F.R)'
+    sp_eyeD = sparse(I, D, D)
 
     mpsInflatedR = zeros(eltype(AL[]), D^2, d, D^2)
     mpsInflatedL = zeros(eltype(AL[]), D^2, d, D^2)
 
     for l = 1:d
-        mpsInflatedR[:, l, :] = kron(iDmat, AL[][:, l, :])
-        mpsInflatedL[:, l, :] = kron(AL[][:, l, :], iDmat)
+        mpsInflatedR[:, l, :] = kron(sp_eyeD, AL[][:, l, :])
+        mpsInflatedL[:, l, :] = kron(AL[][:, l, :], sp_eyeD)
     end
 
-    k = k0 + 1
+    indVecs = [[-(k0 + 1) -1 1], [[l -(l + 1) l + 1] for l in 1:k0-2]..., [(k0 - 1) -k0 -(k0 + 2)]]
 
-    ψ_finite = ncon([mpsInflatedL, ψ_finite], [[-1, -3, 1], [1, -2]])
-    _, r = qr(reshape(ψ_finite, D^2, d^k)')
-    P = r'
+    ψ_finite = ncon(fill(AL[], k0), indVecs, output=[-k0 - 2, -k0 - 1, -k0:1:-1...])
 
-    @tensor PmpsL[-1, -2, -3] := mpsInflatedL[-1, -3, 1] * Pk0[1, -2]
-    PmpsL = reshape(PmpsL, D^2, (D^2) * d)
-    @tensor PmpsR[-1, -2, -3] := mpsInflatedR[1, -2, -1] * Pk0[1, -3]
-    PmpsR = reshape(PmpsR, D^2, (D^2) * d)
+    V0 = Matrix(reshape(ψ_finite, D^2, d^k0))
 
-    L = P \ PmpsL
-    R = P \ PmpsR
-
-    return Matrix(V0k0), L, R
+    if n == k0
+        return V0, typeof(mpsInflatedL)[], typeof(mpsInflatedR)[]
+    else
+        L = reshape(permutedims(mpsInflatedL, (1, 3, 2)), D^2, (D^2) * d)
+        R = reshape(permutedims(mpsInflatedR, (3, 2, 1)), D^2, (D^2) * d)
+        return V0, L, R
+    end
 end
 
 function good_ground_state(H::MPOHamiltonian{T}, D::Integer) where {T}
