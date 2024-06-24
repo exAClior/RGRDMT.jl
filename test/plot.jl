@@ -7,13 +7,15 @@ function my_plot(eng_filenames::Vector{String}, n_filenames::Vector{String})
     ax1 = Axis(f[1, 1],
         xlabel="n",
         xscale=log2,
-        xticks=[0, 2, 4, 6, 8, 10, 20],
-        ylabel="ΔE",
+        xticks=[2, 4, 6, 8, 10, 20, 30, 60],
+        ylabel="ΔE_relax",
         yscale=log10,
-        yticks=[1e-4, 1e-3, 1e-2, 1e-1, 1],
-        title="Lower Bound",
+        yticks=[1e-4, 1e-3, 1e-2, 1e-1],
+        title="S = 1/2 Heisenberg",
     )
-    markers = (:cross, :diamond, :rect, :circle)
+    xlims!(2, 60)
+    ylims!(1e-4, 1e-1)
+    # markers = (:cross, :diamond, :rect, :circle)
     plot_objs = []
     for (ii, (efname, nfname)) in enumerate(zip(eng_filenames, n_filenames))
         ΔE = readdlm(efname, ',')
@@ -21,7 +23,8 @@ function my_plot(eng_filenames::Vector{String}, n_filenames::Vector{String})
         n = readdlm(nfname, ',')
         n = reshape(n, reduce(*, size(n)))
         pts = [Point2f(nn, δe) for (δe, nn) in zip(ΔE, n)]
-        plt_obj = scatter!(ax1, pts, marker=markers[ii])
+        plt_obj = scatterlines!(ax1, pts)
+        # plt_obj = scatterlines!(ax1, pts, marker=markers[ii])
         push!(plot_objs, plt_obj)
     end
 
@@ -30,14 +33,14 @@ function my_plot(eng_filenames::Vector{String}, n_filenames::Vector{String})
     return f
 end
 
-eng_filenames = vcat(["data/etfi.csv"], ["data/etfi$D.csv" for D in 2:3])
+# eng_filenames = vcat(["data/etfi.csv"], ["data/etfi$D.csv" for D in 2:3])
 
-n_filenames = vcat(["data/ntfi.csv"], ["data/ntfi$D.csv" for D in 2:3])
+# n_filenames = vcat(["data/ntfi.csv"], ["data/ntfi$D.csv" for D in 2:3])
 
 
-# eng_filenames = vcat(["data/exxx.csv"], ["data/exxx$D.csv" for D in 2:3])
+eng_filenames = vcat(["data/exxx.csv"], ["data/exxx$D.csv" for D in 2:3])
 
-# n_filenames = vcat(["data/nxxx.csv"], ["data/nxxx$D.csv" for D in 2:3])
+n_filenames = vcat(["data/nxxx.csv"], ["data/nxxx$D.csv" for D in 2:3])
 
 
 
