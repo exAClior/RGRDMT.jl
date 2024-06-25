@@ -33,14 +33,14 @@ function my_plot(eng_filenames::Vector{String}, n_filenames::Vector{String})
     return f
 end
 
-# eng_filenames = vcat(["data/etfi.csv"], ["data/etfi$D.csv" for D in 2:3])
+eng_filenames = vcat(["data/etfi_dual.csv"], ["data/etfi$D.csv" for D in 2:3])
 
-# n_filenames = vcat(["data/ntfi.csv"], ["data/ntfi$D.csv" for D in 2:3])
+n_filenames = vcat(["data/ntfi_dual.csv"], ["data/ntfi$D.csv" for D in 2:3])
 
 
-eng_filenames = vcat(["data/exxx.csv"], ["data/exxx$D.csv" for D in 2:3])
+# eng_filenames = vcat(["data/exxx.csv"], ["data/exxx$D.csv" for D in 2:5])
 
-n_filenames = vcat(["data/nxxx.csv"], ["data/nxxx$D.csv" for D in 2:3])
+# n_filenames = vcat(["data/nxxx.csv"], ["data/nxxx$D.csv" for D in 2:5])
 
 
 
