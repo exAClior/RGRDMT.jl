@@ -31,11 +31,26 @@ state energy to also be reached with the following equation
 $$e_{0} = \min_{\ket{\psi}} \bra{\psi} h_{i}^{(2)} \ket{\psi}$$
 
 Since $h_{i}^{(2)}$ has no support on spins other than the two at location $i$
-and $i+1$, we could safely simplify the minimization to be done over a reduced
-density matrix on spin $i$ and $i+1$, we denote it as $\rho^{(2)}$.
+and $i+1$, we could safely simplify the minimization. Instread of trying to
+minimize $e_{0}$ over an exponentially large state $\ket{\psi}$, similar result
+is achieved when you do the minimization over reduced density matrix on spin $i$
+and $i+1$, we denote it as $\rho^{(2)}$.
 
 
 $$e_{0} = \min_{\rho^{(2)}} tr( \rho^{(2)} h_{i}^{(2)})$$
+
+However, this naive reduction will bring problems because $\rho^{(2)}$ may not
+correspond to a physical state. Therefore, we need to add the constraint that
+$\rho^{(2)}$ be the reduced density matrix on two spins obtained from a reduced
+density matrix on three spins. This constraint alone will make the solution more
+physical. However, we would still improve by posting a series of constraint for
+our 1D example:
+
+
+$$\rho^{(i)} = tr_{L}(\rho^{(i+1)}) = tr_{R}(\rho^{(i+1)})$$
+
+where $tr_{L/R}$ denotes the partial trace of the left/right most spin's Hilbert
+space.
 
 
 
