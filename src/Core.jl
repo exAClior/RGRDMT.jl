@@ -1,86 +1,83 @@
-using TensorKit,  MPSKit, MPSKitModels
-using Yao
-using Convex, MosekTools, SCS
-using Plots
+function one_step_approx_dual(h::AbstractMatrix{V}, n::Integer, optimizer=SCS.Optimizer) where {V}
 
-function mps_state(H,d, D)
-    random_data = TensorMap(rand, ComplexF64, ℂ^D * ℂ^d, ℂ^D)
-    state = InfiniteMPS([random_data])
-    groundstate, cache, delta = find_groundstate(state, H, GradientGrassmann(; maxiter=50))
-    return groundstate
-end
-
-
-function one_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer, optimizer=SCS.Optimizer) where V
-    d = 2 # spin physical dimension
-    ρs = [ComplexVariable(d^n, d^n) for _ in 2:n]
-
-    constraints = [
-        tr(ρs[1]) == 1.0,
-        [ρ ⪰ 0 for ρ in ρs]...,
-        [ρs[ii-1] == partialtrace(ρs[ii], 1, d * ones(Int64,ii)) for ii in 3:n]...,
-        [ρs[ii-1] == partialtrace(ρs[ii], ii, d * ones(Int64,ii)) for ii in 3:n]...,
-    ]
-
-    problem = minimize(real(tr(h * ρs[1])), constraints)
-
-    solve!(problem, Mosek.Optimizer)
-    return problem
-end
-
-function two_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer, A::)
-    d = 2 # spin physical dimension
-    # 1d translational invariant hamiltonian local term
-
-    ρ3 = ComplexVariable(d^3, d^3)
-
-    @tensor W2[j, l, i, k] := A[j,i,a] * A[a,k,l]
-
-    W2 = reshape(W2, D^2, d^2)
-
-    R2 = reshape(A, D,D*d) 
-    L2 = transpose(reshape(A,D*d,D))
-
-    iremain = Diagonal(ones(ComplexF64,d* D))
-    i2mat = mat(I2)
-
-    ωs = [ComplexVariable(d^2 * D^2, d^2 * D^2) for _ in 1:n-3]
-
-    constraints = [
-        tr(ρ3) == 1.0,
-        ρ3 ⪰ 0,
-        [ω ⪰ 0 for ω in ωs]...,
-        partialtrace(ρ3, 1, d * ones(Int64, 3)) == partialtrace(ρ3, 3, d * ones(Int64, 3)),
-        kron(W2, i2mat) * ρ3 * kron(W2, i2mat)' == partialtrace(ωs[1], 1, [d, D^2, d]),
-        kron(i2mat, W2) * ρ3 * kron(i2mat, W2)' == partialtrace(ωs[1], 3, [d, D^2, d])
-    ]
-
-    for ii in 2:n-3
-        push!(constraints, kron(L2, iremain) * ωs[ii-1] * kron(L2, iremain)' == partialtrace(ωs[ii], 1, [d, D^2, d]))
-        push!(constraints, kron(iremain, R2) * ωs[ii-1] * kron(iremain, R2)' == partialtrace(ωs[ii], 3, [d, D^2, d]))
+    if all(isreal, h)
+        h = real(h)
+    else
+        throw(ArgumentError("Hamiltonian must be real"))
     end
 
-    problem = minimize(real(tr(kron(h, mat(I2)) * ρ3)), constraints)
+    model = Model(optimizer)
+    set_string_names_on_creation(model, false)
+    d = 2 # spin physical dimension
 
-    solve!(problem, Mosek.Optimizer)
-    return problem
+    α = @variable(model, [1:d^(n-1), 1:d^(n-1)] in SymmetricMatrixSpace())
+
+    @variable(model, ϵ)
+
+    @expression(model, expr, kron(h, sparse(I, d^(n - 2), d^(n - 2))) + kron(sparse(I, d, d), α) - kron(α, sparse(I, d, d)) - ϵ .* sparse(I, d^n, d^n))
+
+    @constraint(model, expr >= 0, PSDCone())
+    @objective(model, Max, ϵ)
+
+    optimize!(model)
+
+    ElocTI = value(ϵ)
+    expr = value.(expr)
+    minEig, _, _ = eigsolve(expr, rand(eltype(expr), size(expr, 1)), 1, :SR)
+    minEig = minEig[1]
+    ElocTIRig = value(ϵ) + minEig
+    return ElocTIRig, ElocTI
 end
 
+function two_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer,
+    W2::AbstractMatrix{T}, L2::AbstractMatrix{T}, R2::AbstractMatrix{T},
+    optimizer=SCS.Optimizer) where {V,T}
 
-d = 2
-D = 3 
+    model = Model(optimizer)
+    set_string_names_on_creation(model, false)
+    d = 2 # spin physical dimension
+    k0 = Int(floor(2 * log(D) / log(d)) + 1)
 
-δ = 1.0
-H = heisenberg_XXZ(; Delta=δ , spin=1 // 2);
-h = mat((kron(X, X) + kron(Y, Y) + δ*kron(Z, Z)) / 4);
-ψ = mps_state(H, d, D)
+    ρ = @variable(model, [1:d^(k0+1), 1:d^(k0+1)] in SymmetricMatrixSpace())
 
-A = rand_unitary(d*D);
-A = A[1:D,:];
-A = reshape(A,D,d,D);
-typeof(A)
+    ωs = [@variable(model, [1:d^2*D^2, 1:d^2*D^2] in SymmetricMatrixSpace()) for _ in k0:n-2]
 
-n =  20
-res = main(h,D,n,A)
+    @constraint(model, ρ in PSDCone())
+    for ii in 1:n-(k0+3)
+        @constraint(model, ωs[ii] in PSDCone())
+    end
 
-@show res.optval
+    @constraint(model,
+        partialtrace(ρ, 1, d * ones(Int64, k0 + 1)) .== partialtrace(ρ, k0 + 1, d * ones(Int64, k0 + 1)))
+
+    @constraint(model, tr(ρ) == 1.0)
+
+    sp_eyed = sparse(I, d, d)
+    W2xI = kron(W2, sp_eyed)
+    IxW2 = kron(sp_eyed, W2)
+
+    @constraint(model,
+        W2xI * ρ * W2xI' .== partialtrace(ωs[1], 1, [d, D^2, d])
+    )
+
+    @constraint(
+        model,
+        IxW2 * ρ * IxW2' .== partialtrace(ωs[1], 3, [d, D^2, d])
+    )
+
+    if k0 <= n -2
+        LxI = kron(L2, sp_eyed) 
+        IxR = kron(sp_eyed, R2)
+        for ii in 2:n-(k0+1)
+            @constraint(model, LxI * ωs[ii-1] * LxI' .== partialtrace(ωs[ii], 1, [d, D^2, d]))
+            @constraint(model, IxR * ωs[ii-1] * IxR' .== partialtrace(ωs[ii], 3, [d, D^2, d]))
+        end
+    end
+
+
+    @objective(model, Min, real(tr(kron(h, sparse(I, d^(k0 - 1), d^(k0 - 1))) * ρ)))
+
+    optimize!(model)
+    return objective_value(model)
+end
+
