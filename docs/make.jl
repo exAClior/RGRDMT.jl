@@ -14,10 +14,11 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
+        "API" => "api.md"
     ],
 )
 
 deploydocs(;
     repo="github.com/exAClior/RGRDMT.jl",
-    devbranch="main",
 )
+
