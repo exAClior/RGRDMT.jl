@@ -846,14 +846,16 @@ version = "1.2.0"
 
 [[deps.OMEinsum]]
 deps = ["AbstractTrees", "BatchedRoutines", "ChainRulesCore", "Combinatorics", "LinearAlgebra", "MacroTools", "OMEinsumContractionOrders", "Test", "TupleTools"]
-git-tree-sha1 = "5b7f4666a3fb57f4bca9f2cdb48b0e5478b1717b"
+git-tree-sha1 = "fd0ce51747b27676ecb5cf21ea652f20e1a28c70"
 uuid = "ebe7aa44-baf0-506c-a96f-8464559b3922"
-version = "0.8.1"
+version = "0.8.2"
 
     [deps.OMEinsum.extensions]
+    AMDGPUExt = "AMDGPU"
     CUDAExt = "CUDA"
 
     [deps.OMEinsum.weakdeps]
+    AMDGPU = "21141c5a-9bdb-4563-92ae-f87d6854732e"
     CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 
 [[deps.OMEinsumContractionOrders]]
@@ -1262,9 +1264,9 @@ version = "1.0.0"
     MathTeXEngine = "0a4f8689-d25c-4efe-a92b-7142dfc1aa53"
 
 [[deps.TranscodingStreams]]
-git-tree-sha1 = "a947ea21087caba0a798c5e494d0bb78e3a1a3a0"
+git-tree-sha1 = "d73336d81cafdc277ff45558bb7eaa2b04a8e472"
 uuid = "3bb67fe8-82b1-5028-8e26-92a6c54297fa"
-version = "0.10.9"
+version = "0.10.10"
 weakdeps = ["Random", "Test"]
 
     [deps.TranscodingStreams.extensions]
