@@ -4,9 +4,6 @@ authors = ["Yusheng Zhao <yushengzhao2020@outlook.com> and contributors"]
 version = "1.0.0-DEV"
 
 [deps]
-Convex = "f65535da-76fb-5f13-bab9-19810c17039a"
-DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
-Dualization = "191a621a-6537-11e9-281d-650236a99e60"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 KrylovKit = "0b1a1467-8014-51b9-945f-bf0ae24f4b77"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
@@ -20,7 +17,7 @@ TensorKit = "07d1fe3e-3e46-537d-9eac-e9e13d0d4cec"
 Yao = "5872b779-8223-5990-8dd0-5abbb0748c8c"
 
 [compat]
-julia = "1.10.4"
+julia = "1.6.7"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

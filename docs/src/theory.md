@@ -1,4 +1,3 @@
-
 # Motivation
 We want to find the ground state of a local Hamiltonian for a spin-system on
 some lattice.
@@ -6,6 +5,8 @@ some lattice.
 A spin-system is a collection spin each with Hilbert space $\mathbb{C}^d$. For
 simplicity, we will consider spins residing on a chain with uniform distance
 $a$.
+
+![](spinchain.svg)
 
 The local Hamiltonian is denoted as $H = \sum_{i}^{N} h_i$ where $h_i$ only acts
 non-trivially on a few spins that are physically close together. For simplicity,
@@ -44,14 +45,16 @@ our 1D example:
 
 $$\rho^{(i)} = tr_{L}(\rho^{(i+1)}) = tr_{R}(\rho^{(i+1)})$$
 
+The right most equation is referred to as the Locally Translation Invariant
+(LTI) conditions.
+
 where $tr_{L/R}$ denotes the partial trace of the left/right most spin's Hilbert
 space. Using a graphical tensor network representation, we could visualize the
 constraints as follows:
 
-```@raw html
+![](constraints.png)[^1]
 
-```
-
+[^1]: [kull2024lower](@cite)
 
 When the above constraints are taken into account up to $n$ spins'
 reduced density matrix, we denote the all such two-spin reduce density matrix
@@ -66,10 +69,7 @@ $\rho^{(2)}$ that gives the same $e = tr(\rho^{(2)} h_{i}^{(2)})$ forms a
 hyperplane. Finding $e_0$ is equivalent to finding the hyperplane with lowest
 energy. This is visualized in the following diagram
 
-
-```@raw html
-<img src="pics/space-shrinking.png" width="400">
-```
+![](spaceshrinking.png)[^1]
 
 When we add more constraints, this amounts to cutting $\mathcal{S}$. When we
 follow the lines of previous reasoning and adds more restrictions in the form of
@@ -88,33 +88,4 @@ we could instead do isometries and pick out part of the reduced density matrix
 that are closestly related to ground states. 
 
 
-```@raw html
-<img src="pics/isometry_mapping.png" width="400">
-```
-
-## Implementation
-
-As a result, we obtain the following plot for how close the lower bound was for
-the ground state energy. We obtain the ground state energy for the Heisenberg
-XXX model $H = \sum_{i}^{N} X_{i}X_{i+1} + Y_{i}Y_{i+1} + Z_{i}Z_{i+1}$. The
-theoretical value for the ground state energy per site is $e_{0} = 1/4 -
-\ln{2}$. Let the ground state energy per site obtained from convex optimization
-with relaxed constrains be $e_{rlx}$, we define the gap of groun state energy as
-$\Delta E_{relax} = e_{0} - e_{rlx}$
-
-
-```@raw html
-<img src="pics/test_xxx.png" width="400">
-```
-
-This result should be compared with the result from paper 
-
-```@raw html
-<img src="pics/paper_xxx.png" width="400">
-```
-
-
-# Reference
-[1] I. Kull et al., Phys. Rev. X 14, 021008 (2024).
-
-[2] V. Zauner-Stauber et al., Phys. Rev. B 97, 045145 (2018).
+![](isometry_mapping.png)[^1]

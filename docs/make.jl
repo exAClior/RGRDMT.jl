@@ -20,6 +20,7 @@ makedocs(;
     pages=[
         "Home" => "index.md",
         "Theory" => "theory.md",
+        "Implementation" => "implementation.md",
         "API" => "api.md",
         "Suggested Readings and References" => "reference.md"
     ],

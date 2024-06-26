@@ -1,3 +1,19 @@
+"""
+one_step_approx_dual(h::AbstractMatrix{V}, n::Integer, optimizer=SCS.Optimizer) where {V}
+
+Compute the one-step approximation of the dual energy for a given Hamiltonian.
+
+# Arguments
+- `h::AbstractMatrix{V}`: The Hamiltonian matrix.
+- `n::Integer`: The number of spins.
+- `optimizer=SCS.Optimizer`: The optimizer to use for solving the optimization problem.
+
+# Returns
+- `ElocTIRig::Float64`: The one-step approximation of the dual energy with the lowest eigenvalue added.
+- `ElocTI::Float64`: The one-step approximation of the dual energy.
+
+# Example
+"""
 function one_step_approx_dual(h::AbstractMatrix{V}, n::Integer, optimizer=SCS.Optimizer) where {V}
 
     if all(isreal, h)
@@ -29,6 +45,27 @@ function one_step_approx_dual(h::AbstractMatrix{V}, n::Integer, optimizer=SCS.Op
     return ElocTIRig, ElocTI
 end
 
+"""
+    two_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer,
+        W2::AbstractMatrix{T}, L2::AbstractMatrix{T}, R2::AbstractMatrix{T},
+        optimizer=SCS.Optimizer) where {V,T}
+
+Approximates a two-step Renormalization Group (RG) transformation for a given Hamiltonian `h` using the specified parameters.
+
+# Arguments
+- `h::AbstractMatrix{V}`: The input Hamiltonian matrix.
+- `D::Integer`: The bond dimension.
+- `n::Integer`: The number of RG steps.
+- `W2::AbstractMatrix{T}`: The second layer of the RG transformation.
+- `L2::AbstractMatrix{T}`: The left transformation matrix for the second layer.
+- `R2::AbstractMatrix{T}`: The right transformation matrix for the second layer.
+- `optimizer=SCS.Optimizer`: The optimizer to use for solving the optimization problem.
+
+# Returns
+The objective value of the optimization problem.
+
+# Example
+"""
 function two_step_approx(h::AbstractMatrix{V}, D::Integer, n::Integer,
     W2::AbstractMatrix{T}, L2::AbstractMatrix{T}, R2::AbstractMatrix{T},
     optimizer=SCS.Optimizer) where {V,T}
