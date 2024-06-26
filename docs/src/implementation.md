@@ -17,7 +17,7 @@ This step requires us to apply the isometry and reduce dimension of the reduced 
 
 A good isometry is obtained from a variationally obtained ground state estimation of the Hamiltonian. We use the [MPSKit.jl](https://github.com/QuantumKitHub/MPSKit.jl) to obtain the ground state estimation. For convinence, we provide a function [`good_ground_state`](@ref) to obtain the ground state estimation. If you choose to use a pre-solved ground state estimation, you might need to trim down the virtual bond dimension of the MPS to desired value. This is achieved with [`approx_ground_state`](@ref).
 
-After obtaining the ground state MPS, we use the left canonical form of the MPS to obtain the isometry. It is implemented in function [`CGMapping_from_AL`](@ref).
+After obtaining the ground state MPS, we use the left canonical form of the MPS to obtain the isometry. It is implemented in function [`CGmapping_from_AL`](@ref).
 
 Finally, with the isometry, we can reduce the dimension of the reduced density matrix. For clarify sake's we only consider the primal problem. The implementation is done in function [`two_step_approx`](@ref).
 
