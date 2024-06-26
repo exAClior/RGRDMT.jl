@@ -1,9 +1,8 @@
 # RGRDMT
 
-This package implements the algorithm proposed in Kull et al[1]. 
+This package implements the algorithm for finding lower bound to ground state energy of a translation invariant Hamiltonian proposed in Kull et al[1]. 
 
-In order to run the code, please see `test/Core.jl`  
-  
+For directions on how to use the package, please refer to the [documentation](https://exAClior.github.io/RGRDMT.jl/stable/).
   
 ## Reference
 [1] I. Kull et al., Phys. Rev. X 14, 021008 (2024).
