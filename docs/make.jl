@@ -1,9 +1,14 @@
 using RGRDMT
 using Documenter
+using DocumenterCitations
+
 
 DocMeta.setdocmeta!(RGRDMT, :DocTestSetup, :(using RGRDMT); recursive=true)
 
+bib = CitationBibliography(joinpath(@__DIR__,"src/reference.bib"),style=:authoryear)
+
 makedocs(;
+    plugins = [bib],
     modules=[RGRDMT],
     authors="Yusheng Zhao <yushengzhao2020@outlook.com> and contributors",
     sitename="RGRDMT.jl",
@@ -14,7 +19,9 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
-        "API" => "api.md"
+        "Theory" => "theory.md",
+        "API" => "api.md",
+        "Suggested Readings and References" => "reference.md"
     ],
 )
 
