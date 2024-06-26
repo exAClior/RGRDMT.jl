@@ -2,7 +2,7 @@ module RGRDMT
 
 using TensorKit, MPSKit, MPSKitModels
 using Yao
-using JuMP
+using JuMP, Convex
 using LinearAlgebra
 using MAT
 using SparseArrays, KrylovKit
@@ -16,6 +16,5 @@ export CGmapping_from_AL, approx_ground_state, good_ground_state
 
 include("loader.jl")
 export load_MPS, load_Hamiltonian
-
 
 end
